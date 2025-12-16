@@ -1,0 +1,31 @@
+﻿@model WebProje.Models.Personel
+
+<h1>Personel Sil</h1>
+
+<div class="alert alert-danger">
+    <h4>Bu personeli silmek istediğinize emin misiniz?</h4>
+    <p>
+        <strong>Ad:</strong> @Model.Ad<br />
+        <strong>Soyad:</strong> @Model.Soyad<br />
+        <strong>Cinsiyet:</strong> @Model.Cinsiyet<br />
+        <strong>Uzmanlıklar:</strong>
+        @if (Model.Uzmanliklar != null && Model.Uzmanliklar.Any())
+        {
+            @foreach (var uzmanlik in Model.Uzmanliklar)
+            {
+                @uzmanlik.UzmanlikAdi
+
+                <br />
+            }
+        }
+        else
+        {
+            <span>Uzmanlık yok</span>
+        }
+    </p>
+</div>
+
+<form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Listele" class="btn btn-secondary">İptal</a>
+</form>

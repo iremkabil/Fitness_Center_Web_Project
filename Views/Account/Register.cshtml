@@ -1,0 +1,68 @@
+﻿@model WebProje.Models.User
+
+@{
+    ViewData["Title"] = "Kaydol";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+<style>
+    .form-container {
+        max-width: 400px;
+        margin: 0 auto;
+        margin-top: 100px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-container h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .form-container button {
+        display: block;
+        margin: 20px auto 0 auto;
+    }
+
+    .form-container p {
+        text-align: center;
+    }
+</style>
+
+<div class="form-container">
+    <h2>Register</h2>
+    <form asp-action="Register" method="post">
+        <div class="form-group">
+            <label asp-for="Ad"></label>
+            <input asp-for="Ad" class="form-control" />
+            <span asp-validation-for="Ad" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Soyad"></label>
+            <input asp-for="Soyad" class="form-control" />
+            <span asp-validation-for="Soyad" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Telefon"></label>
+            <input asp-for="Telefon" class="form-control" />
+            <span asp-validation-for="Telefon" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Sifre"></label>
+            <input asp-for="Sifre" class="form-control" type="password" />
+            <span asp-validation-for="Sifre" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">Kayıt ol</button>
+    </form>
+    <p>
+        Zaten hesabın var mı? <a asp-action="Login">Giriş yap</a>.
+    </p>
+</div>

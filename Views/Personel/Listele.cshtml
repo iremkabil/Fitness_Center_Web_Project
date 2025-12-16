@@ -1,0 +1,70 @@
+@model IEnumerable<WebProje.Models.Personel>
+@using WebProje.Helpers
+
+<h1>Personel Listeleme</h1>
+
+<a asp-action="Create" class="btn btn-primary mb-3">Personel Ekle</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ad</th>
+            <th>Soyad</th>
+            <th>Uzmanlıklar</th>
+            <th>Cinsiyet</th>
+            <th>Mesai Saatleri</th>
+            <th>Çalışma Günleri</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var personel in Model)
+        {
+            <tr>
+                <td>@personel.Ad</td>
+                <td>@personel.Soyad</td>
+                <td>
+                    @if (personel.Uzmanliklar != null && personel.Uzmanliklar.Any())
+                    {
+                        @foreach (var uzmanlik in personel.Uzmanliklar)
+                        {
+                            <span>@uzmanlik.UzmanlikAdi</span>
+
+                            <br />
+                        }
+                    }
+                    else
+                    {
+                        <span>Uzmanlık yok</span>
+                    }
+                </td>
+                <td>@personel.Cinsiyet</td>
+                <td>
+                    @foreach (var mesai in personel.Mesailer)
+                    {
+                        <span>@mesai.BaslangicZamani - @mesai.BitisZamani</span>
+
+                        <br />
+                    }
+                </td>
+                <td>
+                    @foreach (var mesai in personel.Mesailer)
+                    {
+                        foreach (var gun in mesai.CalistigiGunler)
+                        {
+                            <span>@GunHelper.GetTurkceGun(gun.Gun)</span>
+
+                            <br />
+                        }
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@personel.Id" class="btn btn-warning btn-sm">Düzenle</a>
+                    <a asp-action="Delete" asp-route-id="@personel.Id" class="btn btn-danger btn-sm">Sil</a>
+                    <br />
+                    <a asp-action="Randevular" asp-route-id="@personel.Id" class="btn btn-info btn-sm">Randevuları Görüntüle</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

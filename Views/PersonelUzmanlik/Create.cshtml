@@ -1,0 +1,38 @@
+﻿@model WebProje.Models.PersonelUzmanlik
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+}
+
+<h2>Yeni Uzmanlık Ekle</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="UzmanlikAdi" class="control-label">Uzmanlık Adı</label>
+        <input asp-for="UzmanlikAdi" class="form-control" />
+        <span asp-validation-for="UzmanlikAdi" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>İşlemler</label>
+        @if (ViewBag.Islemler != null)
+        {
+            <div class="form-check">
+                @foreach (var islem in ViewBag.Islemler)
+                {
+                    <div>
+                        <input type="checkbox" name="seciliIslemler" value="@islem.Id" class="form-check-input" id="islem-@islem.Id" />
+                        <label for="islem-@islem.Id" class="form-check-label">@islem.Ad</label>
+                    </div>
+                }
+            </div>
+        }
+        <span asp-validation-for="Islemler" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+
+    <!-- İptal Butonu -->
+    <a asp-action="Listele" class="btn btn-secondary">İptal</a>
+</form>

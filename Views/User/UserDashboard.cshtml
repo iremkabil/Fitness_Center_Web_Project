@@ -1,0 +1,74 @@
+﻿@{
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+
+    ViewData["Title"] = "User Dashboard";
+}
+
+<div class="hero">
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-lg-5">
+                <div class="intro-excerpt">
+                    <h1>Hoşgeldiniz @ViewBag.UserName!</h1>
+                    <p class="mb-4">Saç tasarımında estetik ve kaliteyi bir araya getiriyoruz...</p>
+                    <p>
+                        <a class="btn btn-secondary" asp-controller="Randevu" asp-action="IslemSec">Randevu Al</a>
+                        <a class="btn btn-white-outline" asp-controller="AiOneri" asp-action="Index">Saç Model önerisi Al</a>
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-7 hero-img-wrap">
+                <img src="~/images/happy-woman.png" style="max-width: 100%; height: auto;" class="img-fluid" alt="Hero Image">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="services-section">
+    <div class="container">
+        <h2 class="text-center mb-5" style="color: black; padding-top: 20px; padding-bottom: 20px;">Size Sunduğumuz Hizmetler</h2>
+        <div class="row">
+            <!-- Saç Modelleri -->
+            <div class="col-12 col-sm-6 col-md-4 mb-5">
+                <div class="post-entry">
+                    <a href="#" class="post-thumbnail">
+                        <img src="~/images/hairstyle.jpg" alt="Saç Modelleri" class="img-fluid">
+                    </a>
+                    <div class="post-content-entry">
+                        <h3><a href="#">Saç Modelleri</a></h3>
+                        <p>Modern ve yenilikçi saç modelleriyle tarzınızı baştan yaratıyoruz.</p>
+                        <a class="btn btn-primary" href="#">İşlem Detayları</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tırnak İşlemleri -->
+            <div class="col-12 col-sm-6 col-md-4 mb-5">
+                <div class="post-entry">
+                    <a href="#" class="post-thumbnail">
+                        <img src="~/images/nail.jpg" alt="Tırnak İşlemleri" class="img-fluid">
+                    </a>
+                    <div class="post-content-entry">
+                        <h3><a href="#">Tırnak İşlemleri</a></h3>
+                        <p>Profesyonel tırnak bakım ve tasarım hizmetlerimizle el ve ayak sağlığınızı destekliyoruz.</p>
+                        <a class="btn btn-primary" href="#">İşlem Detayları</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saç Kesim İşlemleri -->
+            <div class="col-12 col-sm-6 col-md-4 mb-5">
+                <div class="post-entry">
+                    <a href="#" class="post-thumbnail">
+                        <img src="~/images/haircut.jpg" alt="Saç Kesim İşlemleri" class="img-fluid">
+                    </a>
+                    <div class="post-content-entry">
+                        <h3><a href="#">Saç Kesim İşlemleri</a></h3>
+                        <p>Deneyimli ekibimiz, yüz hatlarınıza uygun saç kesimlerini titizlikle gerçekleştirir.</p>
+                        <a class="btn btn-primary" href="#">İşlem Detayları</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

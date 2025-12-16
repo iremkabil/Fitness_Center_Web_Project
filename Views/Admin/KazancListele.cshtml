@@ -1,0 +1,47 @@
+﻿@model List<WebProje.Models.Kazanc>
+
+@{
+    ViewData["Title"] = "Kazanç Listele";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2 class ="text-center my-4">Aylık kazançlar</h2>
+
+<div class="container mt-4">
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">
+            @ViewBag.Error
+        </div>
+    }
+    else
+    {
+
+        @if (Model != null && Model.Any())
+        {
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Ay</th>
+                        <th>Kazanç (₺)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var kazanc in Model)
+                    {
+                        <tr>
+                            <td>@kazanc.Ay</td>
+                            <td>@kazanc.kazanc.ToString("C")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                Henüz kazanç bilgisi bulunmamaktadır.
+            </div>
+        }
+    }
+</div>

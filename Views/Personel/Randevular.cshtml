@@ -1,0 +1,37 @@
+﻿@model IEnumerable<WebProje.Models.Randevu>
+@{
+    ViewBag.Title = $"{ViewBag.Personel.Ad} {ViewBag.Personel.Soyad} - Onaylı Randevular";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Müşteri Adı Soyadı</th>
+            <th>Telefon No</th>
+            <th>İşlem Adı</th>
+            <th>Tarih</th>
+            <th>Saat</th>
+            <th>Ücret</th>
+            <th>Süre</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var randevu in Model)
+        {
+            <tr>
+                <td>@randevu.Id</td>
+                <td>@randevu.User.Ad @randevu.User.Soyad </td>
+                <td>@randevu.User.Telefon</td>
+                <td>@randevu.Islem.Ad</td>
+                <td>@randevu.RandevuTarihi.ToShortDateString()</td>
+                <td>@randevu.RandevuSaati</td>
+                <td>@randevu.Ucret</td>
+                <td>@randevu.Sure</td>
+            </tr>
+        }
+    </tbody>
+</table>

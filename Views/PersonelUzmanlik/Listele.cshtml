@@ -1,0 +1,45 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+}
+
+<div class="container">
+    <!-- Uzmanlıklar Başlığı -->
+    <h2 class="text-center my-4">Uzmanlıklar</h2>
+
+    <!-- Yeni Uzmanlık Ekle Butonu -->
+    <div class="text-right mb-3">
+        <a asp-action="Create" class="btn btn-primary">Yeni Uzmanlık Ekle</a>
+    </div>
+
+    <!-- Uzmanlıklar Tablosu -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Uzmanlık Adı</th>
+                <th>İşlemler</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var uzmanlik in Model)
+            {
+                <tr>
+                    <td>@uzmanlik.UzmanlikAdi</td>
+                    <td>
+                        @foreach (var islem in uzmanlik.Islemler)
+                        {
+                            <p>@islem.Ad</p>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@uzmanlik.Id" class="btn btn-warning">Düzenle</a>
+                        <form asp-action="Delete" asp-route-id="@uzmanlik.Id" method="post" style="display:inline-block;">
+                            <button type="submit" class="btn btn-danger">Sil</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

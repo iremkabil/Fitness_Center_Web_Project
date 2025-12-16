@@ -1,0 +1,36 @@
+﻿@model WebProje.Models.PersonelUzmanlik
+
+@{
+    ViewData["Title"] = "Silme Onayı";
+   
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+}
+
+<h2>Silme Onayı</h2>
+
+<p>Bu uzmanlığı silmek istediğinizden emin misiniz?</p>
+
+<div class="card">
+    <div class="card-header">
+        <strong>Uzmanlık Bilgisi</strong>
+    </div>
+    <div class="card-body">
+        <p><strong>Uzmanlık Adı:</strong> @Model.UzmanlikAdi</p>
+
+        <p><strong>İşlemler:</strong></p>
+        <ul>
+            @foreach (var islem in Model.Islemler)
+            {
+                <li>@islem.Ad</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-danger">Evet, Sil</button>
+        <a asp-action="Listele" class="btn btn-secondary">İptal</a>
+    </div>
+</form>

@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Giriş yap";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .form-container {
+        max-width: 400px;
+        margin: 0 auto; /* Yatay ortalama */
+        margin-top: 100px; /* Yukarıdan boşluk */
+        padding: 20px; /* İç boşluk */
+        border: 1px solid #ddd; /* Çerçeve */
+        border-radius: 10px; /* Köşe yuvarlatma */
+        background-color: #fff; /* Arka plan rengi */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Hafif gölge */
+    }
+
+    .form-container h2 {
+        text-align: center; /* Başlık ortalama */
+        margin-bottom: 20px; /* Alt boşluk */
+    }
+
+    .form-container button {
+        display: block; /* Tam genişlik kontrolü */
+        margin: 20px auto 0 auto; /* Ortala ve yukarı boşluk ekle */
+    }
+
+    .form-container p {
+        text-align: center; /* Alt metni ortala */
+    }
+</style>
+
+<div class="form-container">
+    <h2>Login</h2>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    }
+
+    <form asp-action="Login" method="post">
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" name="email" class="form-control" id="email" required />
+        </div>
+        <div class="form-group">
+            <label for="sifre">Password</label>
+            <input type="password" name="sifre" class="form-control" id="sifre" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <p>
+        Hesabınız yok mu? <a asp-action="Register">Kayıt olun</a>.
+    </p>
+</div>

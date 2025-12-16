@@ -1,0 +1,47 @@
+﻿@model IEnumerable<WebProje.Models.Islem>
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "İşlem Listesi";
+}
+
+<h2 class="text-center my-4">İşlemler</h2>
+<br />
+<a asp-action="Create" class="btn btn-primary">Yeni İşlem Ekle</a>
+<br />
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Ad</th>
+            <th>Ücret</th>
+            <th>Süre</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var islem in Model)
+            {
+                <tr>
+                    <td>@islem.Id</td>
+                    <td>@islem.Ad</td>
+                    <td>@islem.Ucret.ToString("C")</td>
+                    <td>@islem.Sure</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@islem.Id" class="btn btn-warning">Düzenle</a>
+                        <a asp-action="Delete" asp-route-id="@islem.Id" class="btn btn-danger">Sil</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">Kayıt bulunamadı.</td>
+            </tr>
+        }
+    </tbody>
+</table>

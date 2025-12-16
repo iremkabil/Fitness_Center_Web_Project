@@ -1,0 +1,71 @@
+@model WebProje.Models.Personel
+@using WebProje.Helpers
+
+<h1>Personel Ekle</h1>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label for="Ad">Ad</label>
+        <input asp-for="Ad" class="form-control" />
+        <span asp-validation-for="Ad" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="Soyad">Soyad</label>
+        <input asp-for="Soyad" class="form-control" />
+        <span asp-validation-for="Soyad" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="Cinsiyet">Cinsiyet</label>
+        <select asp-for="Cinsiyet" class="form-control">
+            <option value="">Seçiniz</option>
+            <option value="Erkek">Erkek</option>
+            <option value="Kadın">Kadın</option>
+        </select>
+        <span asp-validation-for="Cinsiyet" class="text-danger"></span>
+    </div>
+    <br />
+    <div class="form-group">
+        <label>Uzmanlıklar</label>
+        <div>
+            @foreach (var uzmanlik in ViewBag.Uzmanliklar)
+            {
+                <div class="form-check">
+                    <input type="checkbox" name="seciliUzmanliklar" value="@uzmanlik.Id" class="form-check-input" />
+                    <label class="form-check-label">@uzmanlik.UzmanlikAdi</label>
+                </div>
+            }
+        </div>
+    </div>
+    <br />
+    <div class="form-group">
+        <label>Mesai Başlangıç Saati</label>
+        <input type="time" name="MesaiBaslangic" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Mesai Bitiş Saati</label>
+        <input type="time" name="MesaiBitis" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Çalışma Günleri</label>
+        <div>
+            @foreach (var gun in Enum.GetValues(typeof(DayOfWeek)).Cast<DayOfWeek>())
+            {
+                <div class="form-check">
+                    <input type="checkbox" name="CalismaGunleri" value="@gun" class="form-check-input" />
+                    <label class="form-check-label">@GunHelper.GetTurkceGun(gun)</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Listele" class="btn btn-secondary">İptal</a>
+
+</form>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

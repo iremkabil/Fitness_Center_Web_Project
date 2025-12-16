@@ -1,0 +1,34 @@
+﻿@model WebProje.Models.Islem
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    ViewData["Title"] = "İşlem Sil";
+
+}
+
+<h2>İşlem Sil</h2>
+
+<div class="alert alert-warning">
+    <h4>Bu işlemi silmek istediğinizden emin misiniz?</h4>
+</div>
+
+<!-- İşlem Detayları -->
+<dl class="row">
+    <dt class="col-sm-3">Ad</dt>
+    <dd class="col-sm-9">@Model.Ad</dd>
+
+    <dt class="col-sm-3">Ücret</dt>
+    <dd class="col-sm-9">@Model.Ucret</dd>
+
+    <dt class="col-sm-3">Süre</dt>
+    <dd class="col-sm-9">@Model.Sure</dd>
+</dl>
+
+<!-- Silme ve Geri Dönüş Butonları -->
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="Id" />
+    <br />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" class="btn btn-secondary">Geri Dön</a>
+</form>
