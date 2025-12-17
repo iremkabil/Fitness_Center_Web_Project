@@ -25,16 +25,25 @@ namespace Fitness_Center_Web_Project.Context
         {
             base.OnModelCreating(modelBuilder);
 
+            // Decimal alanlar (truncate uyarılarını kaldırır)
             modelBuilder.Entity<Islem>()
                 .Property(i => i.Ucret)
-                .HasColumnType("decimal(18, 2)"); // Precision: 18, Scale: 2
-            modelBuilder.Entity<Personel>()
-               .HasMany(p => p.Uzmanliklar)
-               .WithMany(u => u.Personeller)
-               .UsingEntity(j => j.ToTable("PersonelUzmanliklar"));
+                .HasPrecision(18, 2);
+
             modelBuilder.Entity<Randevu>()
-               .Property(r => r.Ucret)
-               .HasColumnType("decimal(18,2)");
+                .Property(r => r.Ucret)
+                .HasPrecision(18, 2);
+
+            // Uyarıda geçen property adı "kazanc" (küçük harf)
+            modelBuilder.Entity<Kazanc>()
+                .Property(k => k.kazanc)
+                .HasPrecision(18, 2);
+
+            // Personel <-> Uzmanlik (Many-to-Many)
+            modelBuilder.Entity<Personel>()
+                .HasMany(p => p.Uzmanliklar)
+                .WithMany(u => u.Personeller)
+                .UsingEntity(j => j.ToTable("PersonelUzmanliklar"));
         }
 
     }
