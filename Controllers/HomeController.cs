@@ -1,6 +1,6 @@
+using Fitness_Center_Web_Project.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using Fitness_Center_Web_Project.Models;
 
 namespace Fitness_Center_Web_Project.Controllers
 {
@@ -13,20 +13,51 @@ namespace Fitness_Center_Web_Project.Controllers
             _logger = logger;
         }
 
+        // Ana sayfa
+        [HttpGet]
         public IActionResult Index()
         {
             return View();
         }
 
+        // Menüdeki sayfalar (þimdilik basit sayfalar; view'larý ekleyeceðiz)
+        [HttpGet]
+        public IActionResult Services()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult About()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            return View();
+        }
+
+        // Ýstersen Privacy kalsýn; yoksa menüden kaldýrýrsýn
+        [HttpGet]
         public IActionResult Privacy()
         {
             return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpGet]
+        public IActionResult Error(int? statusCode = null, string? message = null)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var model = new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                StatusCode = statusCode,
+                Message = message
+            };
+
+            return View(model);
         }
     }
 }

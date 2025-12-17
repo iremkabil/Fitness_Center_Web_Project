@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Fitness_Center_Web_Project.Context;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Fitness_Center_Web_Project.Context;
-using System.Net.Http.Headers;
 
 namespace Fitness_Center_Web_Project.Controllers
 {
@@ -13,36 +12,42 @@ namespace Fitness_Center_Web_Project.Controllers
         {
             _context = context;
         }
+
+        [HttpGet]
         public IActionResult UserDashboard()
         {
-            // Session'dan rolü al
             var role = HttpContext.Session.GetString("Role");
-			var username = HttpContext.Session.GetString("Username");
+            var username = HttpContext.Session.GetString("Username");
 
-
-
-			// Eğer kullanıcı adminse, erişim reddedilir
-			if (string.IsNullOrEmpty(role) || role == "Admin")
-            {
+            // Giriş yoksa veya Admin ise user paneline sokma
+            if (string.IsNullOrWhiteSpace(role) || role == "Admin")
                 return RedirectToAction("Login", "Account");
-            }
-			ViewBag.UserName = username;
-			
-			return View();
+
+            ViewBag.UserName = username ?? "Kullanıcı";
+            return View();
         }
 
+        [HttpGet]
         public async Task<IActionResult> Randevularim()
         {
-            var userId = int.Parse(HttpContext.Session.GetString("UserId"));
+            var role = HttpContext.Session.GetString("Role");
+            if (string.IsNullOrWhiteSpace(role) || role == "Admin")
+                return RedirectToAction("Login", "Account");
+
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdStr, out var userId))
+                return RedirectToAction("Login", "Account");
 
             var randevular = await _context.Randevular
+                .AsNoTracking()
                 .Include(r => r.Personel)
                 .Include(r => r.Islem)
                 .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.RandevuTarihi)
+                .ThenByDescending(r => r.RandevuSaati)
                 .ToListAsync();
 
             return View(randevular);
         }
-
     }
 }
