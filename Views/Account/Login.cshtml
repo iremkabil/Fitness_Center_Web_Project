@@ -1,4 +1,6 @@
-﻿@{
+﻿@model Fitness_Center_Web_Project.Models.UserLogin
+
+@{
     ViewData["Title"] = "Giriş yap";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -6,50 +8,61 @@
 <style>
     .form-container {
         max-width: 400px;
-        margin: 0 auto; /* Yatay ortalama */
-        margin-top: 100px; /* Yukarıdan boşluk */
-        padding: 20px; /* İç boşluk */
-        border: 1px solid #ddd; /* Çerçeve */
-        border-radius: 10px; /* Köşe yuvarlatma */
-        background-color: #fff; /* Arka plan rengi */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Hafif gölge */
+        margin: 0 auto;
+        margin-top: 100px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
-    .form-container h2 {
-        text-align: center; /* Başlık ortalama */
-        margin-bottom: 20px; /* Alt boşluk */
-    }
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-    .form-container button {
-        display: block; /* Tam genişlik kontrolü */
-        margin: 20px auto 0 auto; /* Ortala ve yukarı boşluk ekle */
-    }
+        .form-container button {
+            display: block;
+            margin: 20px auto 0 auto;
+        }
 
-    .form-container p {
-        text-align: center; /* Alt metni ortala */
-    }
+        .form-container p {
+            text-align: center;
+        }
 </style>
 
 <div class="form-container">
-    <h2>Login</h2>
+    <h2>Giriş Yap</h2>
 
     @if (ViewBag.ErrorMessage != null)
     {
-        <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
     }
 
     <form asp-action="Login" method="post">
+        @Html.AntiForgeryToken()
+
         <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" name="email" class="form-control" id="email" required />
+            <label asp-for="Email"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
+
         <div class="form-group">
-            <label for="sifre">Password</label>
-            <input type="password" name="sifre" class="form-control" id="sifre" required />
+            <label asp-for="Sifre"></label>
+            <input asp-for="Sifre" type="password" class="form-control" />
+            <span asp-validation-for="Sifre" class="text-danger"></span>
         </div>
-        <button type="submit" class="btn btn-primary">Login</button>
+
+        <button type="submit" class="btn btn-primary">Giriş Yap</button>
     </form>
+
     <p>
         Hesabınız yok mu? <a asp-action="Register">Kayıt olun</a>.
     </p>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
