@@ -4,12 +4,15 @@ namespace Fitness_Center_Web_Project.Models
 {
     public class UserLogin
     {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }
+        [Required(ErrorMessage = "E-posta zorunludur.")]
+        [EmailAddress(ErrorMessage = "Geçerli bir e-posta giriniz.")]
+        [StringLength(150, ErrorMessage = "E-posta 150 karakterden uzun olamaz.")]
+        public string Email { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Şifre zorunludur.")]
         [DataType(DataType.Password)]
-        public string Sifre { get; set; }
+        [StringLength(100, ErrorMessage = "Şifre 100 karakterden uzun olamaz.")]
+        public string Sifre { get; set; } = string.Empty;
     }
 }
+
