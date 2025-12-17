@@ -51,6 +51,7 @@ namespace Fitness_Center_Web_Project.Controllers
                 ViewBag.ErrorMessage = "Geçersiz e-posta veya şifre!";
                 return View(model);
             }
+            HttpContext.Session.SetString("Email", HttpContext.Session.GetString("Email"));
 
             HttpContext.Session.SetString("Username", $"{user.Ad} {user.Soyad}");
             HttpContext.Session.SetString("UserId", user.Id.ToString());
