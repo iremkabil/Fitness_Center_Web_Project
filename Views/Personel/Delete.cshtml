@@ -11,21 +11,22 @@
         <strong>Uzmanlıklar:</strong>
         @if (Model.Uzmanliklar != null && Model.Uzmanliklar.Any())
         {
-            @foreach (var uzmanlik in Model.Uzmanliklar)
+        @foreach (var uzmanlik in Model.Uzmanliklar)
             {
-                @uzmanlik.UzmanlikAdi
+        @uzmanlik.UzmanlikAdi
 
-                <br />
+        <br />
             }
         }
         else
         {
-            <span>Uzmanlık yok</span>
+        <span>Uzmanlık yok</span>
         }
     </p>
 </div>
-
 <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+    @Html.AntiForgeryToken()
     <button type="submit" class="btn btn-danger">Sil</button>
     <a asp-action="Listele" class="btn btn-secondary">İptal</a>
 </form>
+

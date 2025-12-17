@@ -158,3 +158,4 @@ namespace Fitness_Center_Web_Project.Controllers
         }
     }
 }
+//Admin kontrolünde artık admin değilse UserDashboard’a değil Login’e gönderiyorum (daha temiz).
