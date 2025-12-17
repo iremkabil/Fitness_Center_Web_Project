@@ -223,3 +223,4 @@ namespace Fitness_Center_Web_Project.Controllers
         }
     }
 }
+//PersonelUzmanlik modeline AktifMi alanını eklemiştik; bu controller onu kullanıyor.

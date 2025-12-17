@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Fitness_Center_Web_Project.Context;
+﻿using Fitness_Center_Web_Project.Context;
 using Fitness_Center_Web_Project.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fitness_Center_Web_Project.Controllers
 {
@@ -14,34 +14,54 @@ namespace Fitness_Center_Web_Project.Controllers
             _context = context;
         }
 
-        // Adım 1: İşlem Seçimi
+        private IActionResult? CheckUserRole()
+        {
+            var role = HttpContext.Session.GetString("Role");
+            // Admin burada randevu almayacak; kullanıcı girişi şart
+            if (string.IsNullOrWhiteSpace(role) || role == "Admin")
+                return RedirectToAction("Login", "Account");
+
+            return null;
+        }
+
+        // Adım 1: Hizmet/Seans seçimi
+        [HttpGet]
         public async Task<IActionResult> IslemSec()
         {
+            var roleCheck = CheckUserRole();
+            if (roleCheck != null) return roleCheck;
+
             var uzmanliklar = await _context.Uzmanliklar
-                .Include(u => u.Islemler)
+                .AsNoTracking()
+                .Where(u => u.AktifMi)
+                .Include(u => u.Islemler.Where(i => i.AktifMi))
+                .OrderBy(u => u.UzmanlikAdi)
                 .ToListAsync();
 
             return View(uzmanliklar);
         }
 
-        // Adım 2: Personel Seçimi
+        // Adım 2: Antrenör seçimi
+        [HttpGet]
         public async Task<IActionResult> PersonelSec(int islemId)
         {
+            var roleCheck = CheckUserRole();
+            if (roleCheck != null) return roleCheck;
+
             var islem = await _context.Islemler
+                .AsNoTracking()
                 .Include(i => i.Uzmanlik)
                     .ThenInclude(u => u.Personeller)
                 .FirstOrDefaultAsync(i => i.Id == islemId);
 
             if (islem == null || islem.Uzmanlik == null)
-            {
-                return RedirectToAction("IslemSec");
-            }
+                return RedirectToAction(nameof(IslemSec));
 
             var personeller = islem.Uzmanlik.Personeller.ToList();
 
             if (!personeller.Any())
             {
-                ViewBag.HataMesaji = "Seçtiğiniz hizmete ait çalışan bulunmamaktadır.";
+                ViewBag.HataMesaji = "Seçtiğiniz hizmete ait antrenör bulunmamaktadır.";
                 ViewBag.Islem = islem;
                 return View(new List<Personel>());
             }
@@ -50,21 +70,22 @@ namespace Fitness_Center_Web_Project.Controllers
             return View(personeller);
         }
 
-        // Adım 3: Tarih ve Saat Seçimi
-        [HttpPost]
+        // Adım 3: Tarih ve saat seçimi (GET)
         [HttpGet]
         public async Task<IActionResult> TarihSaatSec(int islemId, int personelId)
         {
-            var islem = await _context.Islemler.FindAsync(islemId);
+            var roleCheck = CheckUserRole();
+            if (roleCheck != null) return roleCheck;
+
+            var islem = await _context.Islemler.AsNoTracking().FirstOrDefaultAsync(x => x.Id == islemId);
             var personel = await _context.Personeller
+                .AsNoTracking()
                 .Include(p => p.Mesailer)
-                .ThenInclude(m => m.CalistigiGunler)
+                    .ThenInclude(m => m.CalistigiGunler)
                 .FirstOrDefaultAsync(p => p.Id == personelId);
 
             if (islem == null || personel == null)
-            {
-                return RedirectToAction("PersonelSec", new { islemId });
-            }
+                return RedirectToAction(nameof(PersonelSec), new { islemId });
 
             ViewBag.Islem = islem;
             ViewBag.Personel = personel;
@@ -72,82 +93,103 @@ namespace Fitness_Center_Web_Project.Controllers
             return View();
         }
 
+        // Uygunluk kontrolü (POST)
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UygunlukKontrol(int islemId, int personelId, DateTime randevuTarihi, TimeSpan randevuSaati)
         {
-            var islem = await _context.Islemler.FindAsync(islemId);
+            var roleCheck = CheckUserRole();
+            if (roleCheck != null) return roleCheck;
+
+            var islem = await _context.Islemler.FirstOrDefaultAsync(i => i.Id == islemId);
             var personel = await _context.Personeller
                 .Include(p => p.Mesailer)
-                .ThenInclude(m => m.CalistigiGunler)
+                    .ThenInclude(m => m.CalistigiGunler)
                 .FirstOrDefaultAsync(p => p.Id == personelId);
 
             if (islem == null || personel == null)
             {
-                TempData["ErrorMessage"] = "Geçersiz işlem veya personel seçimi.";
-                return RedirectToAction("TarihSaatSec", new { islemId, personelId });
+                TempData["ErrorMessage"] = "Geçersiz hizmet veya antrenör seçimi.";
+                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
             }
 
-            var randevuBitisZamani = randevuSaati + islem.Sure;
-            var gun = randevuTarihi.DayOfWeek;
-            var mesai = personel.Mesailer
-                .FirstOrDefault(m => m.CalistigiGunler.Any(g => g.Gun == gun) &&
-                                     m.BaslangicZamani <= randevuSaati &&
-                                     m.BitisZamani >= randevuBitisZamani);
-
-            if (mesai == null)
+            // 1) Geçmiş tarih/saat engeli (kritik)
+            var baslangic = randevuTarihi.Date.Add(randevuSaati);
+            if (baslangic < DateTime.Now)
             {
-                TempData["ErrorMessage"] = "Personelin seçilen tarihte ve saatte mesaisi bulunmamaktadır.";
-                return RedirectToAction("TarihSaatSec", new { islemId, personelId });
+                TempData["ErrorMessage"] = "Geçmiş bir tarih/saat için randevu oluşturamazsınız.";
+                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
             }
 
-            var mevcutRandevular = await _context.Randevular
-                .Where(r => r.PersonelId == personelId &&
-                            r.RandevuTarihi.Date == randevuTarihi.Date)
+            // 2) Mesai kontrolü
+            var bitisSaat = randevuSaati + islem.Sure;
+            var gun = randevuTarihi.DayOfWeek;
+
+            var mesaiUygunMu = personel.Mesailer.Any(m =>
+                m.CalistigiGunler.Any(g => g.Gun == gun) &&
+                m.BaslangicZamani <= randevuSaati &&
+                m.BitisZamani >= bitisSaat);
+
+            if (!mesaiUygunMu)
+            {
+                TempData["ErrorMessage"] = "Antrenörün seçilen tarihte/saatte mesaisi bulunmamaktadır.";
+                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
+            }
+
+            // 3) Çakışma kontrolü (overlap)
+            var gunRandevulari = await _context.Randevular
+                .Where(r => r.PersonelId == personelId
+                            && r.RandevuTarihi.Date == randevuTarihi.Date
+                            && r.Durum != "İptal")
                 .ToListAsync();
 
-            var cakisanRandevu = mevcutRandevular
-                .FirstOrDefault(r =>
-                    (r.RandevuSaati >= randevuSaati && r.RandevuSaati < randevuBitisZamani) ||
-                    (r.RandevuSaati + r.Sure > randevuSaati));
+            var yeniBaslangic = randevuSaati;
+            var yeniBitis = randevuSaati + islem.Sure;
 
-            if (cakisanRandevu != null)
+            bool cakismaVar = gunRandevulari.Any(r =>
             {
-                TempData["ErrorMessage"] = "Seçilen saat aralığında personelin başka bir randevusu bulunmaktadır.";
-                return RedirectToAction("TarihSaatSec", new { islemId, personelId });
+                var mevcutBaslangic = r.RandevuSaati;
+                var mevcutBitis = r.RandevuSaati + r.Sure;
+                return yeniBaslangic < mevcutBitis && mevcutBaslangic < yeniBitis;
+            });
+
+            if (cakismaVar)
+            {
+                TempData["ErrorMessage"] = "Seçilen saat aralığında antrenörün başka bir randevusu bulunmaktadır.";
+                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
             }
 
-            // Uygunluk onayı
-            TempData["SuccessMessage"] = "Randevu seçimi başarılı!";
-            return RedirectToAction("RandevuOnayla", new { islemId, personelId, randevuTarihi, randevuSaati });
+            TempData["SuccessMessage"] = "Seçim uygun. Randevu onay sayfasına yönlendiriliyorsunuz.";
+            return RedirectToAction(nameof(RandevuOnayla), new { islemId, personelId, randevuTarihi, randevuSaati });
         }
 
-
+        // Onay ekranı (GET)
+        [HttpGet]
         public async Task<IActionResult> RandevuOnayla(int islemId, int personelId, DateTime randevuTarihi, TimeSpan randevuSaati)
         {
-            var userIdString = HttpContext.Session.GetString("UserId");
+            var roleCheck = CheckUserRole();
+            if (roleCheck != null) return roleCheck;
 
-            if (string.IsNullOrEmpty(userIdString))
-            {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdStr, out var userId))
                 return RedirectToAction("Login", "Account");
-            }
-            var userId = int.Parse(userIdString);
 
-
-            var user = await _context.Users.FindAsync(userId);
-            var islem = await _context.Islemler.FindAsync(islemId);
-            var personel = await _context.Personeller.FindAsync(personelId);
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            var islem = await _context.Islemler.AsNoTracking().FirstOrDefaultAsync(i => i.Id == islemId);
+            var personel = await _context.Personeller.AsNoTracking().FirstOrDefaultAsync(p => p.Id == personelId);
 
             if (user == null || islem == null || personel == null)
-            {
                 return RedirectToAction("UserDashboard", "User");
-            }
 
             var randevu = new Randevu
             {
+                UserId = userId,
                 User = user,
+                IslemId = islemId,
                 Islem = islem,
+                PersonelId = personelId,
                 Personel = personel,
-                RandevuTarihi = randevuTarihi,
+                RandevuTarihi = randevuTarihi.Date,
                 RandevuSaati = randevuSaati,
                 Durum = "Beklemede",
                 Sure = islem.Sure,
@@ -157,38 +199,112 @@ namespace Fitness_Center_Web_Project.Controllers
             return View(randevu);
         }
 
+        // Onay (POST) -> DB’ye yazma burada
         [HttpPost]
-        public async Task<IActionResult> RandevuOnayla(Randevu randevu)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RandevuOnayla(int islemId, int personelId, DateTime randevuTarihi, TimeSpan randevuSaati)
         {
-               
-                randevu.Durum = "Beklemede"; // Onay bekleniyor
-                _context.Randevular.Add(randevu);
-                await _context.SaveChangesAsync();
+            var roleCheck = CheckUserRole();
+            if (roleCheck != null) return roleCheck;
 
-                return RedirectToAction("Randevularim", "User");
-          
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdStr, out var userId))
+                return RedirectToAction("Login", "Account");
+
+            var islem = await _context.Islemler.FirstOrDefaultAsync(i => i.Id == islemId);
+            var personel = await _context.Personeller
+                .Include(p => p.Mesailer)
+                    .ThenInclude(m => m.CalistigiGunler)
+                .FirstOrDefaultAsync(p => p.Id == personelId);
+
+            if (islem == null || personel == null)
+                return RedirectToAction(nameof(IslemSec));
+
+            // Güvenlik: POST’ta tekrar geçmiş/mesai/çakışma kontrolü
+            var baslangic = randevuTarihi.Date.Add(randevuSaati);
+            if (baslangic < DateTime.Now)
+            {
+                TempData["ErrorMessage"] = "Geçmiş bir tarih/saat için randevu oluşturamazsınız.";
+                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
+            }
+
+            var bitisSaat = randevuSaati + islem.Sure;
+            var gun = randevuTarihi.DayOfWeek;
+
+            var mesaiUygunMu = personel.Mesailer.Any(m =>
+                m.CalistigiGunler.Any(g => g.Gun == gun) &&
+                m.BaslangicZamani <= randevuSaati &&
+                m.BitisZamani >= bitisSaat);
+
+            if (!mesaiUygunMu)
+            {
+                TempData["ErrorMessage"] = "Antrenörün seçilen tarihte/saatte mesaisi bulunmamaktadır.";
+                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
+            }
+
+            var gunRandevulari = await _context.Randevular
+                .Where(r => r.PersonelId == personelId
+                            && r.RandevuTarihi.Date == randevuTarihi.Date
+                            && r.Durum != "İptal")
+                .ToListAsync();
+
+            var yeniBaslangic = randevuSaati;
+            var yeniBitis = randevuSaati + islem.Sure;
+
+            bool cakismaVar = gunRandevulari.Any(r =>
+            {
+                var mevcutBaslangic = r.RandevuSaati;
+                var mevcutBitis = r.RandevuSaati + r.Sure;
+                return yeniBaslangic < mevcutBitis && mevcutBaslangic < yeniBitis;
+            });
+
+            if (cakismaVar)
+            {
+                TempData["ErrorMessage"] = "Seçilen saat aralığında antrenörün başka bir randevusu bulunmaktadır.";
+                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
+            }
+
+            var yeniRandevu = new Randevu
+            {
+                UserId = userId,
+                PersonelId = personelId,
+                IslemId = islemId,
+                RandevuTarihi = randevuTarihi.Date,
+                RandevuSaati = randevuSaati,
+                Durum = "Beklemede",
+                Sure = islem.Sure,
+                Ucret = islem.Ucret
+            };
+
+            _context.Randevular.Add(yeniRandevu);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Randevularim", "User");
         }
 
-
+        // Kullanıcı randevu silme (kendi randevusu ise)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RandevuSil(int id)
         {
-            var randevu = await _context.Randevular.FindAsync(id);
-            if (randevu == null)
-            {
-                return NotFound();
-            }
+            var roleCheck = CheckUserRole();
+            if (roleCheck != null) return roleCheck;
+
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdStr, out var userId))
+                return RedirectToAction("Login", "Account");
+
+            var randevu = await _context.Randevular.FirstOrDefaultAsync(r => r.Id == id);
+            if (randevu == null) return NotFound();
+
+            // Güvenlik: sadece kendi randevusunu silebilsin
+            if (randevu.UserId != userId)
+                return Forbid();
 
             _context.Randevular.Remove(randevu);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Randevularim", "User"); // Kullanıcının randevu listesini gösteren bir action
+            return RedirectToAction("Randevularim", "User");
         }
-
-
-
-
     }
 }
-
