@@ -51,3 +51,8 @@ namespace Fitness_Center_Web_Project.Controllers
         }
     }
 }
+
+//Değişiklikler:
+//Session’dan UserId alırken TryParse kullandım (null/bozuksa patlamasın).
+//AsNoTracking() ekledim (listeleme performansı + gereksiz tracking yok).
+//Randevuları tarihe göre sıraladım.
