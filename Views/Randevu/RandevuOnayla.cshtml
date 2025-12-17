@@ -20,7 +20,7 @@
     <p><strong>Süre:</strong> @Model.Sure</p>
     <p><strong>Ücret:</strong> @Model.Ucret</p>
 
-    <form asp-controller="Randevu" asp-action="RandevuOnayla" method="post" style="text-align:center; margin-top:20px;">
+    <form asp-controller="Randevu" asp-action="RandevuOnaylaPost" method="post" style="text-align:center; margin-top:20px;">
         @Html.AntiForgeryToken()
 
         <!-- Güvenli parametreler: sadece seçim bilgisi -->

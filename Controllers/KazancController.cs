@@ -57,3 +57,7 @@ namespace Fitness_Center_Web_Project.Controllers
         }
     }
 }
+// API endpoint’i gelecek yıl yerine bu yıl (istersen query ile yıl seçilebilir)
+// Admin kontrolü API için Redirect değil, Unauthorized/Forbid döner
+// Ay isimleri Türkçe görünsün diye tr-TR culture kullanır
+// Boş aylar 0 döner

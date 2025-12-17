@@ -202,7 +202,7 @@ namespace Fitness_Center_Web_Project.Controllers
         // Onay (POST) -> DB’ye yazma burada
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RandevuOnayla(int islemId, int personelId, DateTime randevuTarihi, TimeSpan randevuSaati)
+        public async Task<IActionResult> RandevuOnaylaPost(int islemId, int personelId, DateTime randevuTarihi, TimeSpan randevuSaati)
         {
             var roleCheck = CheckUserRole();
             if (roleCheck != null) return roleCheck;

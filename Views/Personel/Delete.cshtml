@@ -9,12 +9,12 @@
         <strong>Soyad:</strong> @Model.Soyad<br />
         <strong>Cinsiyet:</strong> @Model.Cinsiyet<br />
         <strong>Uzmanlıklar:</strong>
+
         @if (Model.Uzmanliklar != null && Model.Uzmanliklar.Any())
         {
-        @foreach (var uzmanlik in Model.Uzmanliklar)
+            foreach (var uzmanlik in Model.Uzmanliklar)
             {
         @uzmanlik.UzmanlikAdi
-
         <br />
             }
         }
@@ -24,6 +24,7 @@
         }
     </p>
 </div>
+
 <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
     @Html.AntiForgeryToken()
     <button type="submit" class="btn btn-danger">Sil</button>
