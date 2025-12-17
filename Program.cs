@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using WebProje.Context;
+using Fitness_Center_Web_Project.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WebProje.Context;
-using WebProje.Models;
+using Fitness_Center_Web_Project.Context;
+using Fitness_Center_Web_Project.Models;
 
-namespace WebProje.Controllers
+namespace Fitness_Center_Web_Project.Controllers
 {
     public class RandevuController : Controller
     {

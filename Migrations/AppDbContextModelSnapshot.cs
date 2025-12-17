@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using WebProje.Context;
+using Fitness_Center_Web_Project.Context;
 
 #nullable disable
 
-namespace WebProje.Migrations
+namespace Fitness_Center_Web_Project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot
@@ -37,7 +37,7 @@ namespace WebProje.Migrations
                     b.ToTable("PersonelUzmanliklar", (string)null);
                 });
 
-            modelBuilder.Entity("WebProje.Models.Islem", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.Islem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -66,7 +66,7 @@ namespace WebProje.Migrations
                     b.ToTable("Islemler");
                 });
 
-            modelBuilder.Entity("WebProje.Models.Kazanc", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.Kazanc", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -88,7 +88,7 @@ namespace WebProje.Migrations
                     b.ToTable("Kazanclar");
                 });
 
-            modelBuilder.Entity("WebProje.Models.Mesai", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.Mesai", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -112,7 +112,7 @@ namespace WebProje.Migrations
                     b.ToTable("Mesailer");
                 });
 
-            modelBuilder.Entity("WebProje.Models.MesaiGunu", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.MesaiGunu", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -133,7 +133,7 @@ namespace WebProje.Migrations
                     b.ToTable("MesaiGunleri");
                 });
 
-            modelBuilder.Entity("WebProje.Models.Personel", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.Personel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -161,7 +161,7 @@ namespace WebProje.Migrations
                     b.ToTable("Personeller");
                 });
 
-            modelBuilder.Entity("WebProje.Models.PersonelUzmanlik", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.PersonelUzmanlik", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -178,7 +178,7 @@ namespace WebProje.Migrations
                     b.ToTable("Uzmanliklar");
                 });
 
-            modelBuilder.Entity("WebProje.Models.Randevu", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.Randevu", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -222,7 +222,7 @@ namespace WebProje.Migrations
                     b.ToTable("Randevular");
                 });
 
-            modelBuilder.Entity("WebProje.Models.User", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -263,40 +263,40 @@ namespace WebProje.Migrations
 
             modelBuilder.Entity("PersonelPersonelUzmanlik", b =>
                 {
-                    b.HasOne("WebProje.Models.Personel", null)
+                    b.HasOne("Fitness_Center_Web_Project.Models.Personel", null)
                         .WithMany()
                         .HasForeignKey("PersonellerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebProje.Models.PersonelUzmanlik", null)
+                    b.HasOne("Fitness_Center_Web_Project.Models.PersonelUzmanlik", null)
                         .WithMany()
                         .HasForeignKey("UzmanliklarId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("WebProje.Models.Islem", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.Islem", b =>
                 {
-                    b.HasOne("WebProje.Models.PersonelUzmanlik", "Uzmanlik")
+                    b.HasOne("Fitness_Center_Web_Project.Models.PersonelUzmanlik", "Uzmanlik")
                         .WithMany("Islemler")
                         .HasForeignKey("UzmanlikId");
 
                     b.Navigation("Uzmanlik");
                 });
 
-            modelBuilder.Entity("WebProje.Models.Mesai", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.Mesai", b =>
                 {
-                    b.HasOne("WebProje.Models.Personel", "Personel")
+                    b.HasOne("Fitness_Center_Web_Project.Models.Personel", "Personel")
                         .WithMany("Mesailer")
                         .HasForeignKey("PersonelId");
 
                     b.Navigation("Personel");
                 });
 
-            modelBuilder.Entity("WebProje.Models.MesaiGunu", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.MesaiGunu", b =>
                 {
-                    b.HasOne("WebProje.Models.Mesai", "Mesai")
+                    b.HasOne("Fitness_Center_Web_Project.Models.Mesai", "Mesai")
                         .WithMany("CalistigiGunler")
                         .HasForeignKey("MesaiId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -305,21 +305,21 @@ namespace WebProje.Migrations
                     b.Navigation("Mesai");
                 });
 
-            modelBuilder.Entity("WebProje.Models.Randevu", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.Randevu", b =>
                 {
-                    b.HasOne("WebProje.Models.Islem", "Islem")
+                    b.HasOne("Fitness_Center_Web_Project.Models.Islem", "Islem")
                         .WithMany()
                         .HasForeignKey("IslemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebProje.Models.Personel", "Personel")
+                    b.HasOne("Fitness_Center_Web_Project.Models.Personel", "Personel")
                         .WithMany()
                         .HasForeignKey("PersonelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebProje.Models.User", "User")
+                    b.HasOne("Fitness_Center_Web_Project.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -332,17 +332,17 @@ namespace WebProje.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WebProje.Models.Mesai", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.Mesai", b =>
                 {
                     b.Navigation("CalistigiGunler");
                 });
 
-            modelBuilder.Entity("WebProje.Models.Personel", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.Personel", b =>
                 {
                     b.Navigation("Mesailer");
                 });
 
-            modelBuilder.Entity("WebProje.Models.PersonelUzmanlik", b =>
+            modelBuilder.Entity("Fitness_Center_Web_Project.Models.PersonelUzmanlik", b =>
                 {
                     b.Navigation("Islemler");
                 });

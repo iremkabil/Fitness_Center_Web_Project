@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebProje.Models;
-using WebProje.Context;
+using Fitness_Center_Web_Project.Models;
+using Fitness_Center_Web_Project.Context;
 using System.Linq;
 
-namespace WebProje.Controllers
+namespace Fitness_Center_Web_Project.Controllers
 {
     public class AccountController : Controller
     {

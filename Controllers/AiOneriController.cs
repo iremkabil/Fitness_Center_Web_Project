@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebProje.Models;
+using Fitness_Center_Web_Project.Models;
 using System.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Text;
 
 
-namespace WebProje.Controllers
+namespace Fitness_Center_Web_Project.Controllers
 {
     public class AiOneriController : Controller
     {

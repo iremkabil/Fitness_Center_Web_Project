@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using WebProje.Context;
-using WebProje.Models;
+using Fitness_Center_Web_Project.Context;
+using Fitness_Center_Web_Project.Models;
 
-namespace WebProje.Controllers
+namespace Fitness_Center_Web_Project.Controllers
 {
     public class AdminController : Controller
     {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WebProje.Context;
+using Fitness_Center_Web_Project.Context;
 
-namespace WebProje.Controllers
+namespace Fitness_Center_Web_Project.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

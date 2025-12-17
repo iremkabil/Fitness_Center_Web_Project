@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace WebProje.Migrations
+namespace Fitness_Center_Web_Project.Migrations
 {
     /// <inheritdoc />
     public partial class user : Migration

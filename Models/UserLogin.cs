@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebProje.Models
+namespace Fitness_Center_Web_Project.Models
 {
     public class UserLogin
     {

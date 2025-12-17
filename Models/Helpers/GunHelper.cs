@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WebProje.Helpers
+namespace Fitness_Center_Web_Project.Helpers
 {
     public static class GunHelper
     {

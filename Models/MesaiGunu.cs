@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
-namespace WebProje.Models
+namespace Fitness_Center_Web_Project.Models
 {
     public class MesaiGunu
     {

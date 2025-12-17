@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebProje.Models;
+using Fitness_Center_Web_Project.Models;
 
-namespace WebProje.Context
+namespace Fitness_Center_Web_Project.Context
 { 
     public class AppDbContext : DbContext
     {

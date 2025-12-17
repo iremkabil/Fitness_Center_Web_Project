@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebProje.Models
+namespace Fitness_Center_Web_Project.Models
 {
     public class PersonelUzmanlik
     {
