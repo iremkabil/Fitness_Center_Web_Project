@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Fitness_Center_Web_Project.Context;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Fitness_Center_Web_Project.Context;
+using System.Globalization;
 
 namespace Fitness_Center_Web_Project.Controllers
 {
@@ -9,41 +10,46 @@ namespace Fitness_Center_Web_Project.Controllers
     public class KazancController : ControllerBase
     {
         private readonly AppDbContext _context;
-        private IActionResult CheckAdminRole()
-        {
-            var role = HttpContext.Session.GetString("Role");
-            if (role == "Admin")
-            {
-                return null; // Admin ise herhangi bir işlem yapmadan devam et
-            }
-            return RedirectToAction("UserDashboard", "User"); // Kullanıcı paneline yönlendir
-        }
+
         public KazancController(AppDbContext context)
         {
             _context = context;
         }
 
-        [HttpGet("AylikKazanclar")]
-        public async Task<ActionResult<IEnumerable<object>>> GetAylikKazanclar()
+        private bool IsAdmin()
         {
-            
+            var role = HttpContext.Session.GetString("Role");
+            return string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // GET: /api/Kazanc/AylikKazanclar?year=2025
+        [HttpGet("AylikKazanclar")]
+        public async Task<IActionResult> GetAylikKazanclar([FromQuery] int? year = null)
+        {
+            if (!IsAdmin())
+                return Unauthorized(new { message = "Admin girişi gerekli." });
+
+            int y = year ?? DateTime.Now.Year;
+            var culture = new CultureInfo("tr-TR");
+
             var sonuc = new List<object>();
-            var simdikiTarih = DateTime.Now;
-            var gelecekYil = simdikiTarih.Year + 1;
 
             for (int ay = 1; ay <= 12; ay++)
             {
-                var baslangicTarihi = new DateTime(gelecekYil, ay, 1);
-                var bitisTarihi = baslangicTarihi.AddMonths(1).AddDays(-1);
+                var baslangic = new DateTime(y, ay, 1);
+                var bitis = baslangic.AddMonths(1); // [baslangic, bitis)
 
-                var toplamKazanc = await _context.Randevular
-                    .Where(r => r.Durum == "Onaylandı" && r.RandevuTarihi >= baslangicTarihi && r.RandevuTarihi <= bitisTarihi)
-                    .SumAsync(r => r.Ucret);
+                var toplam = await _context.Randevular
+                    .Where(r => r.Durum == "Onaylandı"
+                                && r.RandevuTarihi >= baslangic
+                                && r.RandevuTarihi < bitis)
+                    .SumAsync(r => (decimal?)r.Ucret) ?? 0m;
 
                 sonuc.Add(new
                 {
-                    Ay = baslangicTarihi.ToString("MMMM"), // Ayın ismini alır
-                    Kazanc = toplamKazanc
+                    AyNo = ay,
+                    Ay = culture.DateTimeFormat.GetMonthName(ay),
+                    Kazanc = toplam
                 });
             }
 
