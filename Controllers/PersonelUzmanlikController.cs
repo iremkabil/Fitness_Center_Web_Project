@@ -50,7 +50,7 @@ namespace Fitness_Center_Web_Project.Controllers
             if (roleCheck != null) return roleCheck;
 
             await FillIslemlerForView();
-            return View();
+            return View(new PersonelUzmanlik { AktifMi = true }); // ekle
         }
 
         // Yeni uzmanlık oluşturma (POST)
