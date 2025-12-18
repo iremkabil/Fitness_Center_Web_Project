@@ -2,9 +2,7 @@
 
 @{
     ViewData["Title"] = "Silme Onayı";
-   
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-
 }
 
 <h2>Silme Onayı</h2>
@@ -19,18 +17,26 @@
         <p><strong>Uzmanlık Adı:</strong> @Model.UzmanlikAdi</p>
 
         <p><strong>İşlemler:</strong></p>
-        <ul>
-            @foreach (var islem in Model.Islemler)
-            {
-                <li>@islem.Ad</li>
-            }
-        </ul>
+
+        @if (Model.Islemler != null && Model.Islemler.Any())
+        {
+            <ul>
+                @foreach (var islem in Model.Islemler)
+                {
+                    <li>@islem.Ad</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="text-muted">Bu uzmanlığa bağlı işlem yok.</div>
+        }
     </div>
 </div>
 
-<form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">
-    <div class="form-group mt-3">
-        <button type="submit" class="btn btn-danger">Evet, Sil</button>
-        <a asp-action="Listele" class="btn btn-secondary">İptal</a>
-    </div>
+<form asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post" class="mt-3">
+    @Html.AntiForgeryToken()
+
+    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+    <a asp-action="Listele" class="btn btn-secondary">İptal</a>
 </form>
