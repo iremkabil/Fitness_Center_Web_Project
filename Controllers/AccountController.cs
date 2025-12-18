@@ -18,14 +18,14 @@ namespace Fitness_Center_Web_Project.Controllers
             _context = context;
         }
 
-        // Giriş sayfası
+        // GET: /Account/Login
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
-        // Giriş işlemi
+        // POST: /Account/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Login(UserLogin model)
@@ -33,12 +33,13 @@ namespace Fitness_Center_Web_Project.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Admin kontrolü (DB'ye bağımlı olmasın diye önce kontrol)
-            if (string.Equals(model.Email, AdminEmail, StringComparison.OrdinalIgnoreCase)
-                && model.Sifre == AdminPassword)
+            // Admin kontrolü (DB'den bağımsız)
+            if (string.Equals(model.Email, AdminEmail, StringComparison.OrdinalIgnoreCase) &&
+                model.Sifre == AdminPassword)
             {
                 HttpContext.Session.SetString("Username", "Admin");
                 HttpContext.Session.SetString("Role", "Admin");
+                HttpContext.Session.SetString("Email", AdminEmail);
                 return RedirectToAction("AdminDashboard", "Admin");
             }
 
@@ -46,45 +47,47 @@ namespace Fitness_Center_Web_Project.Controllers
                 .AsNoTracking()
                 .FirstOrDefault(u => u.Email == model.Email && u.Sifre == model.Sifre);
 
-            if (user is null)
+            if (user == null)
             {
                 ViewBag.ErrorMessage = "Geçersiz e-posta veya şifre!";
                 return View(model);
             }
-            HttpContext.Session.SetString("Email", HttpContext.Session.GetString("Email"));
 
             HttpContext.Session.SetString("Username", $"{user.Ad} {user.Soyad}");
             HttpContext.Session.SetString("UserId", user.Id.ToString());
-            HttpContext.Session.SetString("Role", user.Role);
+            HttpContext.Session.SetString("Role", user.Role ?? "User");
+            HttpContext.Session.SetString("Email", user.Email ?? "");
 
-            // UserController yoksa Home/Index'e yönlendirebilirsin.
             return RedirectToAction("UserDashboard", "User");
         }
 
-        // Kayıt sayfası
+        // GET: /Account/Register
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
 
-        // Kayıt işlemi
+        // POST: /Account/Register
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Register(User user)
+        public IActionResult Register(Fitness_Center_Web_Project.Models.User user)
         {
             if (!ModelState.IsValid)
                 return View(user);
 
-            // Aynı email ile ikinci kayıt olmasın
             bool emailExists = _context.Users.Any(u => u.Email == user.Email);
             if (emailExists)
             {
-                ModelState.AddModelError(nameof(User.Email), "Bu e-posta zaten kayıtlı.");
+                // Buradaki kritik düzeltme: User çakışmasın diye full name kullandık
+                ModelState.AddModelError(
+                    nameof(Fitness_Center_Web_Project.Models.User.Email),
+                    "Bu e-posta zaten kayıtlı."
+                );
                 return View(user);
             }
 
-            // Rolü güvenli set et (formdan Admin gelmesini engeller)
+            // Güvenlik: formdan Role/Admin gelirse bile ez
             user.Role = "User";
 
             _context.Users.Add(user);
@@ -102,7 +105,7 @@ namespace Fitness_Center_Web_Project.Controllers
             return RedirectToAction(nameof(Login));
         }
 
-        // Çıkış işlemi
+        // GET: /Account/Logout
         [HttpGet]
         public IActionResult Logout()
         {
