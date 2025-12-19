@@ -1,32 +1,36 @@
-﻿@model IEnumerable<Fitness_Center_Web_Project.Models.Personel>
-
+﻿@model List<Fitness_Center_Web_Project.Models.Personel>
 @{
     Layout = "~/Views/Shared/_UserLayout.cshtml";
-    ViewBag.Title = "Personel Seçimi";
+    var islem = ViewBag.Islem as Fitness_Center_Web_Project.Models.Islem;
 }
 
-<div class="container" style="padding: 20px;">
-    <h2 class="text-center" style="margin-bottom: 30px;">Personel Seçimi</h2>
-    <p class="text-center">Seçilen işlem: <strong>@ViewBag.Islem.Ad</strong></p>
+<h2 class="text-center">Personel Seçimi</h2>
 
-    <form method="post" action="@Url.Action("TarihSaatSec", "Randevu")" style="max-width: 600px; margin: 0 auto;">
-        <input type="hidden" name="islemId" value="@ViewBag.Islem.Id" />
+@if (ViewBag.HataMesaji != null)
+{
+    <div class="alert alert-warning text-center">@ViewBag.HataMesaji</div>
+}
 
-        <p class="text-center">Lütfen bir personel seçin:</p>
-        <ul class="list-group">
-            @foreach (var personel in Model)
+@if (islem != null)
+{
+    <p class="text-center">Seçilen işlem: <strong>@islem.Ad</strong></p>
+}
+
+@if (Model != null && Model.Any())
+{
+    <form method="get" asp-controller="Randevu" asp-action="TarihSaatSec" class="text-center">
+        <input type="hidden" name="islemId" value="@islem?.Id" />
+
+        <div class="d-flex flex-column align-items-center gap-2">
+            @foreach (var p in Model)
             {
-                <li class="list-group-item">
-                    <input type="radio" name="personelId" value="@personel.Id" id="personel-@personel.Id" />
-                    <label for="personel-@personel.Id">
-                        @personel.Ad @personel.Soyad (@personel.Cinsiyet)
-                    </label>
-                </li>
+                <label class="border rounded p-2" style="min-width:300px; text-align:left;">
+                    <input type="radio" name="personelId" value="@p.Id" required />
+                    @p.Ad @p.Soyad
+                </label>
             }
-        </ul>
-
-        <div style="text-align: center; margin-top: 20px;">
-            <button type="submit" class="btn btn-primary">Devam Et</button>
         </div>
+
+        <button type="submit" class="btn btn-success mt-3">Devam Et</button>
     </form>
-</div>
+}

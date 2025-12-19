@@ -2,10 +2,7 @@
 using Fitness_Center_Web_Project.Context;
 using Microsoft.EntityFrameworkCore;
 using Fitness_Center_Web_Project.Models;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Fitness_Center_Web_Project.Controllers
 {
@@ -18,18 +15,34 @@ namespace Fitness_Center_Web_Project.Controllers
             _context = context;
         }
 
-        private IActionResult CheckAdminRole()
+        private IActionResult? CheckAdminRole()
         {
             var role = HttpContext.Session.GetString("Role");
-            if (role == "Admin")
-            {
-                return null; // Admin ise herhangi bir işlem yapmadan devam et
-            }
-            return RedirectToAction("UserDashboard", "User"); // Kullanıcı paneline yönlendir
+            if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            return RedirectToAction("UserDashboard", "User");
         }
 
+        private async Task FillUzmanliklarForView(List<int>? selectedIds = null)
+        {
+            var selected = (selectedIds ?? new List<int>()).ToHashSet();
+
+            ViewBag.Uzmanliklar = await _context.Uzmanliklar
+                .AsNoTracking()
+                .Where(u => u.AktifMi)
+                .OrderBy(u => u.UzmanlikAdi)
+                .Select(u => new SelectListItem
+                {
+                    Value = u.Id.ToString(),
+                    Text = u.UzmanlikAdi,
+                    Selected = selected.Contains(u.Id)
+                })
+                .ToListAsync();
+        }
 
         // Personel Listeleme
+        [HttpGet]
         public async Task<IActionResult> Listele()
         {
             var roleCheck = CheckAdminRole();
@@ -37,98 +50,80 @@ namespace Fitness_Center_Web_Project.Controllers
 
             var personeller = await _context.Personeller
                 .Include(p => p.Uzmanliklar)
-                .ThenInclude(u => u.Islemler)
                 .Include(p => p.Mesailer)
-                .ThenInclude(m => m.CalistigiGunler)
+                    .ThenInclude(m => m.CalistigiGunler)
+                .AsNoTracking()
                 .ToListAsync();
 
             return View(personeller);
         }
 
-
-
         // GET: Personel/Create
+        [HttpGet]
         public async Task<IActionResult> Create()
         {
             var roleCheck = CheckAdminRole();
             if (roleCheck != null) return roleCheck;
 
-            ViewBag.Uzmanliklar = await _context.Uzmanliklar
-                .Select(u => new
-                {
-                    u.Id,
-                    u.UzmanlikAdi
-                }).ToListAsync();
-
-            return View();
+            await FillUzmanliklarForView();
+            return View(new Personel());
         }
 
         // POST: Personel/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Personel personel, List<int> seciliUzmanliklar, string MesaiBaslangic, string MesaiBitis, List<DayOfWeek> CalismaGunleri)
+        public async Task<IActionResult> Create(
+            Personel personel,
+            List<int> seciliUzmanliklar,
+            string MesaiBaslangic,
+            string MesaiBitis,
+            List<DayOfWeek> CalismaGunleri)
         {
             var roleCheck = CheckAdminRole();
             if (roleCheck != null) return roleCheck;
 
-            if (ModelState.IsValid)
+            // En az 1 uzmanlık şartı (istersen kaldırırsın)
+            if (seciliUzmanliklar == null || !seciliUzmanliklar.Any())
+                ModelState.AddModelError("Uzmanliklar", "En az bir uzmanlık seçmelisiniz.");
+
+            if (!ModelState.IsValid)
             {
-                if (seciliUzmanliklar != null && seciliUzmanliklar.Any())
-                {
-                    var uzmanliklar = await _context.Uzmanliklar
-                        .Where(u => seciliUzmanliklar.Contains(u.Id))
-                        .ToListAsync();
-
-                    foreach (var uzmanlik in uzmanliklar)
-                    {
-                        personel.Uzmanliklar.Add(uzmanlik);
-                    }
-                }
-
-                // Mesai saatlerini doğru şekilde dönüştür
-                if (TimeSpan.TryParse(MesaiBaslangic, out TimeSpan mesaiBaslangic) && TimeSpan.TryParse(MesaiBitis, out TimeSpan mesaiBitis))
-                {
-                    var mesai = new Mesai
-                    {
-                        BaslangicZamani = mesaiBaslangic,
-                        BitisZamani = mesaiBitis
-                    };
-
-                    if (CalismaGunleri != null && CalismaGunleri.Any())
-                    {
-                        mesai.CalistigiGunler = CalismaGunleri.Select(gun => new MesaiGunu
-                        {
-                            Gun = gun
-                        }).ToList();
-                    }
-
-                    personel.Mesailer.Add(mesai);
-                }
-
-                // Personeli kaydet
-                _context.Personeller.Add(personel);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Personel başarıyla eklendi.";
-                return RedirectToAction(nameof(Listele));
+                await FillUzmanliklarForView(seciliUzmanliklar);
+                return View(personel);
             }
 
-            // Hata durumunda uzmanlıkları tekrar doldur
-            ViewBag.Uzmanliklar = await _context.Uzmanliklar
-                .Select(u => new SelectListItem
-                {
-                    Value = u.Id.ToString(),
-                    Text = u.UzmanlikAdi
-                }).ToListAsync();
+            // Uzmanlık ilişkilendir
+            var uzmanliklar = await _context.Uzmanliklar
+                .Where(u => seciliUzmanliklar.Contains(u.Id))
+                .ToListAsync();
 
-            return View(personel);
+            personel.Uzmanliklar = uzmanliklar;
+
+            // Mesai
+            if (TimeSpan.TryParse(MesaiBaslangic, out var bas) &&
+                TimeSpan.TryParse(MesaiBitis, out var bit))
+            {
+                var mesai = new Mesai
+                {
+                    BaslangicZamani = bas,
+                    BitisZamani = bit,
+                    CalistigiGunler = (CalismaGunleri ?? new List<DayOfWeek>())
+                        .Select(g => new MesaiGunu { Gun = g })
+                        .ToList()
+                };
+
+                personel.Mesailer = new List<Mesai> { mesai };
+            }
+
+            _context.Personeller.Add(personel);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Personel başarıyla eklendi.";
+            return RedirectToAction(nameof(Listele));
         }
 
-
-
-
-
         // GET: Personel/Edit/5
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var roleCheck = CheckAdminRole();
@@ -140,20 +135,10 @@ namespace Fitness_Center_Web_Project.Controllers
                     .ThenInclude(m => m.CalistigiGunler)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (personel == null)
-            {
-                return NotFound();
-            }
+            if (personel == null) return NotFound();
 
-            // Uzmanlıkları doldur
-            var personelUzmanlikIds = personel.Uzmanliklar.Select(uzmanlik => uzmanlik.Id).ToList();
-            ViewBag.Uzmanliklar = await _context.Uzmanliklar
-                .Select(u => new SelectListItem
-                {
-                    Value = u.Id.ToString(),
-                    Text = u.UzmanlikAdi,
-                    Selected = personelUzmanlikIds.Contains(u.Id)
-                }).ToListAsync();
+            var selectedIds = personel.Uzmanliklar?.Select(u => u.Id).ToList() ?? new List<int>();
+            await FillUzmanliklarForView(selectedIds);
 
             return View(personel);
         }
@@ -161,95 +146,77 @@ namespace Fitness_Center_Web_Project.Controllers
         // POST: Personel/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Personel personel, List<int> seciliUzmanliklar, string MesaiBaslangic, string MesaiBitis, List<DayOfWeek> CalismaGunleri)
+        public async Task<IActionResult> Edit(
+            int id,
+            Personel personel,
+            List<int> seciliUzmanliklar,
+            string MesaiBaslangic,
+            string MesaiBitis,
+            List<DayOfWeek> CalismaGunleri)
         {
             var roleCheck = CheckAdminRole();
             if (roleCheck != null) return roleCheck;
 
-            if (id != personel.Id)
+            if (id != personel.Id) return BadRequest();
+
+            if (seciliUzmanliklar == null || !seciliUzmanliklar.Any())
+                ModelState.AddModelError("Uzmanliklar", "En az bir uzmanlık seçmelisiniz.");
+
+            if (!ModelState.IsValid)
             {
-                return NotFound();
+                await FillUzmanliklarForView(seciliUzmanliklar);
+                return View(personel);
             }
 
-            if (ModelState.IsValid)
+            var mevcut = await _context.Personeller
+                .Include(p => p.Uzmanliklar)
+                .Include(p => p.Mesailer)
+                    .ThenInclude(m => m.CalistigiGunler)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (mevcut == null) return NotFound();
+
+            // Alanlar
+            mevcut.Ad = personel.Ad;
+            mevcut.Soyad = personel.Soyad;
+            mevcut.Cinsiyet = personel.Cinsiyet;
+
+            // Uzmanlıklar (many-to-many)
+            mevcut.Uzmanliklar.Clear();
+            var uzmanliklar = await _context.Uzmanliklar
+                .Where(u => seciliUzmanliklar.Contains(u.Id))
+                .ToListAsync();
+
+            foreach (var u in uzmanliklar)
+                mevcut.Uzmanliklar.Add(u);
+
+            // Mesai
+            if (TimeSpan.TryParse(MesaiBaslangic, out var bas) &&
+                TimeSpan.TryParse(MesaiBitis, out var bit))
             {
-                var mevcutPersonel = await _context.Personeller
-                    .Include(p => p.Uzmanliklar)
-                    .Include(p => p.Mesailer)
-                        .ThenInclude(m => m.CalistigiGunler)
-                    .FirstOrDefaultAsync(p => p.Id == id);
-
-                if (mevcutPersonel == null)
+                var mesai = mevcut.Mesailer.FirstOrDefault();
+                if (mesai == null)
                 {
-                    return NotFound();
+                    mesai = new Mesai();
+                    mevcut.Mesailer.Add(mesai);
                 }
 
-                // Uzmanlıkları güncelle
-                mevcutPersonel.Uzmanliklar.Clear();
-                if (seciliUzmanliklar != null && seciliUzmanliklar.Any())
-                {
-                    var uzmanliklar = await _context.Uzmanliklar
-                        .Where(u => seciliUzmanliklar.Contains(u.Id))
-                        .ToListAsync();
+                mesai.BaslangicZamani = bas;
+                mesai.BitisZamani = bit;
 
-                    foreach (var uzmanlik in uzmanliklar)
-                    {
-                        mevcutPersonel.Uzmanliklar.Add(uzmanlik);
-                    }
-                }
-
-                // Mesai saatlerini güncelle
-                if (TimeSpan.TryParse(MesaiBaslangic, out TimeSpan mesaiBaslangic) && TimeSpan.TryParse(MesaiBitis, out TimeSpan mesaiBitis))
-                {
-                    var mevcutMesai = mevcutPersonel.Mesailer.FirstOrDefault();
-                    if (mevcutMesai != null)
-                    {
-                        mevcutMesai.BaslangicZamani = mesaiBaslangic;
-                        mevcutMesai.BitisZamani = mesaiBitis;
-
-                        // Çalışma günlerini güncelle
-                        mevcutMesai.CalistigiGunler.Clear();
-                        if (CalismaGunleri != null && CalismaGunleri.Any())
-                        {
-                            mevcutMesai.CalistigiGunler = CalismaGunleri.Select(gun => new MesaiGunu { Gun = gun }).ToList();
-                        }
-                    }
-                    else
-                    {
-                        mevcutPersonel.Mesailer.Add(new Mesai
-                        {
-                            BaslangicZamani = mesaiBaslangic,
-                            BitisZamani = mesaiBitis,
-                            CalistigiGunler = CalismaGunleri?.Select(gun => new MesaiGunu { Gun = gun }).ToList()
-                        });
-                    }
-                }
-
-                mevcutPersonel.Ad = personel.Ad;
-                mevcutPersonel.Soyad = personel.Soyad;
-                mevcutPersonel.Cinsiyet = personel.Cinsiyet;
-
-                _context.Update(mevcutPersonel);
-                await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Personel başarıyla güncellendi.";
-                return RedirectToAction(nameof(Listele));
+                mesai.CalistigiGunler.Clear();
+                foreach (var g in (CalismaGunleri ?? new List<DayOfWeek>()))
+                    mesai.CalistigiGunler.Add(new MesaiGunu { Gun = g });
             }
 
-            // Hata durumunda uzmanlıkları tekrar doldur
-            ViewBag.Uzmanliklar = await _context.Uzmanliklar
-                .Select(u => new SelectListItem
-                {
-                    Value = u.Id.ToString(),
-                    Text = u.UzmanlikAdi
-                }).ToListAsync();
+            await _context.SaveChangesAsync();
 
-            return View(personel);
+            TempData["SuccessMessage"] = "Personel başarıyla güncellendi.";
+            return RedirectToAction(nameof(Listele));
         }
 
-
-
         // GET: Personel/Delete/5
+        [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
             var roleCheck = CheckAdminRole();
@@ -261,11 +228,7 @@ namespace Fitness_Center_Web_Project.Controllers
                     .ThenInclude(m => m.CalistigiGunler)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (personel == null)
-            {
-                return NotFound();
-            }
-
+            if (personel == null) return NotFound();
             return View(personel);
         }
 
@@ -282,52 +245,33 @@ namespace Fitness_Center_Web_Project.Controllers
                     .ThenInclude(m => m.CalistigiGunler)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (personel == null)
-            {
-                return NotFound();
-            }
+            if (personel == null) return NotFound();
 
-            // Mesai ve çalışma günlerini kaldır
-            if (personel.Mesailer != null)
-            {
-                foreach (var mesai in personel.Mesailer)
-                {
-                    _context.MesaiGunleri.RemoveRange(mesai.CalistigiGunler);
-                }
-                _context.Mesailer.RemoveRange(personel.Mesailer);
-            }
+            foreach (var mesai in personel.Mesailer)
+                _context.MesaiGunleri.RemoveRange(mesai.CalistigiGunler);
 
-            // Personeli sil
+            _context.Mesailer.RemoveRange(personel.Mesailer);
             _context.Personeller.Remove(personel);
+
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Personel başarıyla silindi.";
             return RedirectToAction(nameof(Listele));
         }
 
-
         public async Task<IActionResult> Randevular(int id)
         {
-            // İlgili personelin onaylanmış randevularını alıyoruz
             var randevular = await _context.Randevular
-                .Include(r => r.User) // Kullanıcı bilgisi gerekiyorsa eklenebilir
-                .Include(r => r.Islem) // İşlem bilgisi gerekiyorsa eklenebilir
-                .Where(r => r.PersonelId == id && r.Durum == "Onaylandı") // Sadece onaylanmış randevular
+                .Include(r => r.User)
+                .Include(r => r.Islem)
+                .Where(r => r.PersonelId == id && r.Durum == "Onaylandı")
                 .ToListAsync();
 
-            // Personelin bilgilerini de alıyoruz (isteğe bağlı)
             var personel = await _context.Personeller.FirstOrDefaultAsync(p => p.Id == id);
-            if (personel == null)
-            {
-                return NotFound();
-            }
+            if (personel == null) return NotFound();
 
-            ViewBag.Personel = personel; // Personel bilgilerini View'e gönderiyoruz
-            return View(randevular); // Randevuları View'e gönderiyoruz
+            ViewBag.Personel = personel;
+            return View(randevular);
         }
-
-
-
-
     }
 }

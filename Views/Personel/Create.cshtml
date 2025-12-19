@@ -1,5 +1,6 @@
 @model Fitness_Center_Web_Project.Models.Personel
 @using Fitness_Center_Web_Project.Helpers
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 <h1>Personel Ekle</h1>
 
@@ -28,15 +29,25 @@
     <br />
     <div class="form-group">
         <label>Uzmanlıklar</label>
-        <div>
-            @foreach (var uzmanlik in ViewBag.Uzmanliklar)
+
+        @if (ViewBag.Uzmanliklar != null)
+        {
+            foreach (var u in (List<SelectListItem>)ViewBag.Uzmanliklar)
             {
                 <div class="form-check">
-                    <input type="checkbox" name="seciliUzmanliklar" value="@uzmanlik.Id" class="form-check-input" />
-                    <label class="form-check-label">@uzmanlik.UzmanlikAdi</label>
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="seciliUzmanliklar"
+                           value="@u.Value"
+                           id="uz-@u.Value"
+                           @(u.Selected ? "checked" : "") />
+
+                    <label class="form-check-label" for="uz-@u.Value">@u.Text</label>
                 </div>
             }
-        </div>
+        }
+
+        <span class="text-danger">@Html.ValidationMessage("Uzmanliklar")</span>
     </div>
     <br />
     <div class="form-group">

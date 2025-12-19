@@ -41,34 +41,39 @@ namespace Fitness_Center_Web_Project.Controllers
             return View(uzmanliklar);
         }
 
-        // Adım 2: Antrenör seçimi
+        // Adım 2: Personel Seçimi
         [HttpGet]
         public async Task<IActionResult> PersonelSec(int islemId)
         {
-            var roleCheck = CheckUserRole();
-            if (roleCheck != null) return roleCheck;
-
             var islem = await _context.Islemler
                 .AsNoTracking()
-                .Include(i => i.Uzmanlik)
-                    .ThenInclude(u => u.Personeller)
                 .FirstOrDefaultAsync(i => i.Id == islemId);
 
-            if (islem == null || islem.Uzmanlik == null)
-                return RedirectToAction(nameof(IslemSec));
+            if (islem == null)
+                return RedirectToAction("IslemSec");
 
-            var personeller = islem.Uzmanlik.Personeller.ToList();
+            // Kritik düzeltme:
+            // Personeli, Personeller üzerinden; personelin uzmanlıklarında bu işlem var mı diye çekiyoruz.
+            var personeller = await _context.Personeller
+                .Include(p => p.Uzmanliklar)
+                    .ThenInclude(u => u.Islemler)
+                .Where(p => p.AktifMi &&
+                            p.Uzmanliklar.Any(u => u.AktifMi &&
+                                                   u.Islemler.Any(i => i.Id == islemId)))
+                .AsNoTracking()
+                .ToListAsync();
+
+            ViewBag.Islem = islem;
 
             if (!personeller.Any())
             {
-                ViewBag.HataMesaji = "Seçtiğiniz hizmete ait antrenör bulunmamaktadır.";
-                ViewBag.Islem = islem;
+                ViewBag.HataMesaji = "Seçtiğiniz hizmete ait çalışan bulunmamaktadır.";
                 return View(new List<Personel>());
             }
 
-            ViewBag.Islem = islem;
             return View(personeller);
         }
+
 
         // Adım 3: Tarih ve saat seçimi (GET)
         [HttpGet]
