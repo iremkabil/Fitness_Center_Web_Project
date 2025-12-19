@@ -15,14 +15,13 @@ namespace Fitness_Center_Web_Project.Controllers.Api
             _context = context;
         }
 
-        // GET: /api/RaporApi/AylikKazanc?year=2025
-        [HttpGet("AylikKazanc")]
+        // GET: /api/RaporApi/aylik-kazanc?year=2025
+        [HttpGet("aylik-kazanc")]
         public async Task<IActionResult> AylikKazanc([FromQuery] int? year)
         {
             int yil = year ?? DateTime.Now.Year;
 
-            // Parantez önemli: Year filtresi her iki durum için de geçerli olmalı
-            var raw = await _context.Randevular
+            var list = await _context.Randevular
                 .AsNoTracking()
                 .Where(r =>
                     r.RandevuTarihi.Year == yil &&
@@ -30,18 +29,11 @@ namespace Fitness_Center_Web_Project.Controllers.Api
                 .GroupBy(r => r.RandevuTarihi.Month)
                 .Select(g => new
                 {
-                    AyNo = g.Key,
+                    Ay = yil.ToString() + "-" + (g.Key < 10 ? "0" : "") + g.Key.ToString(),
                     Kazanc = g.Sum(x => x.Ucret)
                 })
-                .OrderBy(x => x.AyNo)
+                .OrderBy(x => x.Ay)
                 .ToListAsync();
-
-            // String formatı burada (client side)
-            var list = raw.Select(x => new KazancDto
-            {
-                Ay = $"{yil}-{x.AyNo:00}",
-                Kazanc = x.Kazanc
-            }).ToList();
 
             return Ok(list);
         }

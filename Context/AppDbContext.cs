@@ -13,9 +13,6 @@ namespace Fitness_Center_Web_Project.Context
         public DbSet<Randevu> Randevular { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Kazanc> Kazanclar { get; set; }
-       // public DbSet<AiOneri> AiOneriler { get; set; }
-
-
 
         public AppDbContext(DbContextOptions<AppDbContext>options) : base(options)
         {

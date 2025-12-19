@@ -1,7 +1,6 @@
 ﻿@{
     Layout = "~/Views/Shared/_UserLayout.cshtml";
-
-    ViewData["Title"] = "User Dashboard";
+    ViewData["Title"] = "Üye Paneli";
 }
 
 <div class="hero">
@@ -9,16 +8,21 @@
         <div class="row justify-content-between">
             <div class="col-lg-5">
                 <div class="intro-excerpt">
-                    <h1>Hoşgeldiniz @ViewBag.UserName!</h1>
-                    <p class="mb-4">Saç tasarımında estetik ve kaliteyi bir araya getiriyoruz...</p>
+                    <h1>Hoş geldiniz @ViewBag.UserName!</h1>
+                    <p class="mb-4">
+                        Fitness hedeflerinize ulaşmanız için kişiye özel antrenman ve seans planlaması sunuyoruz.
+                        Uygun eğitmeni seçin, tarih ve saat belirleyin, randevunuzu kolayca oluşturun.
+                    </p>
                     <p>
-                        <a class="btn btn-secondary" asp-controller="Randevu" asp-action="IslemSec">Randevu Al</a>
-                       
+                        <a class="btn btn-secondary" asp-controller="Randevu" asp-action="IslemSec">Seans / Hizmet Seç</a>
+                        <a class="btn btn-outline-light ms-2" asp-controller="User" asp-action="Randevularim">Randevularım</a>
                     </p>
                 </div>
             </div>
+
             <div class="col-lg-7 hero-img-wrap">
-                <img src="~/images/happy-woman.png" style="max-width: 100%; height: auto;" class="img-fluid" alt="Hero Image">
+                <!-- Görsel dosyalarını daha sonra fitness temalı ile değiştirebilirsin -->
+                <img src="~/images/happy-woman.png" style="max-width: 100%; height: auto;" class="img-fluid" alt="Fitness Hero Image">
             </div>
         </div>
     </div>
@@ -26,49 +30,53 @@
 
 <div class="services-section">
     <div class="container">
-        <h2 class="text-center mb-5" style="color: black; padding-top: 20px; padding-bottom: 20px;">Size Sunduğumuz Hizmetler</h2>
+        <h2 class="text-center mb-5" style="color: black; padding-top: 20px; padding-bottom: 20px;">
+            Popüler Seans ve Hizmetler
+        </h2>
+
         <div class="row">
-            <!-- Saç Modelleri -->
+            <!-- Kişisel Antrenman -->
             <div class="col-12 col-sm-6 col-md-4 mb-5">
                 <div class="post-entry">
                     <a href="#" class="post-thumbnail">
-                        <img src="~/images/hairstyle.jpg" alt="Saç Modelleri" class="img-fluid">
+                        <img src="~/images/pt.jpg" alt="Kişisel Antrenman" class="img-fluid">
                     </a>
                     <div class="post-content-entry">
-                        <h3><a href="#">Saç Modelleri</a></h3>
-                        <p>Modern ve yenilikçi saç modelleriyle tarzınızı baştan yaratıyoruz.</p>
-                        <a class="btn btn-primary" href="#">İşlem Detayları</a>
+                        <h3><a href="#">Kişisel Antrenman</a></h3>
+                        <p>Hedefinize uygun program, doğru form takibi ve birebir koçluk ile daha hızlı ilerleyin.</p>
+                        <a class="btn btn-primary" asp-controller="Randevu" asp-action="IslemSec">Seans Seç</a>
                     </div>
                 </div>
             </div>
 
-            <!-- Tırnak İşlemleri -->
+            <!-- Pilates / Yoga -->
             <div class="col-12 col-sm-6 col-md-4 mb-5">
                 <div class="post-entry">
                     <a href="#" class="post-thumbnail">
-                        <img src="~/images/nail.jpg" alt="Tırnak İşlemleri" class="img-fluid">
+                        <img src="~/images/pilates.jpg" alt="Pilates / Yoga" class="img-fluid">
                     </a>
                     <div class="post-content-entry">
-                        <h3><a href="#">Tırnak İşlemleri</a></h3>
-                        <p>Profesyonel tırnak bakım ve tasarım hizmetlerimizle el ve ayak sağlığınızı destekliyoruz.</p>
-                        <a class="btn btn-primary" href="#">İşlem Detayları</a>
+                        <h3><a href="#">Pilates / Yoga</a></h3>
+                        <p>Esneklik, core güçlendirme ve duruş iyileştirme odaklı grup veya bireysel seanslar.</p>
+                        <a class="btn btn-primary" asp-controller="Randevu" asp-action="IslemSec">Seans Seç</a>
                     </div>
                 </div>
             </div>
 
-            <!-- Saç Kesim İşlemleri -->
+            <!-- Beslenme Danışmanlığı -->
             <div class="col-12 col-sm-6 col-md-4 mb-5">
                 <div class="post-entry">
                     <a href="#" class="post-thumbnail">
-                        <img src="~/images/haircut.jpg" alt="Saç Kesim İşlemleri" class="img-fluid">
+                        <img src="~/images/nutrition.jpg" alt="Beslenme Danışmanlığı" class="img-fluid">
                     </a>
                     <div class="post-content-entry">
-                        <h3><a href="#">Saç Kesim İşlemleri</a></h3>
-                        <p>Deneyimli ekibimiz, yüz hatlarınıza uygun saç kesimlerini titizlikle gerçekleştirir.</p>
-                        <a class="btn btn-primary" href="#">İşlem Detayları</a>
+                        <h3><a href="#">Beslenme Danışmanlığı</a></h3>
+                        <p>Kilo alma/verme hedefinize uygun, sürdürülebilir beslenme planı ve takip desteği.</p>
+                        <a class="btn btn-primary" asp-controller="Randevu" asp-action="IslemSec">Seans Seç</a>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>

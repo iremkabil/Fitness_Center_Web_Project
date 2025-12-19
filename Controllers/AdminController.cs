@@ -2,6 +2,7 @@
 using Fitness_Center_Web_Project.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
 using System.Text.Json;
 
 namespace Fitness_Center_Web_Project.Controllers
@@ -113,44 +114,38 @@ namespace Fitness_Center_Web_Project.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> KazancListele()
+        public async Task<IActionResult> KazancListele(int? year)
         {
             var roleCheck = CheckAdminRole();
             if (roleCheck != null) return roleCheck;
+
+            int yil = year ?? DateTime.Now.Year;
 
             try
             {
                 var client = _httpClientFactory.CreateClient();
 
-                var baseUrl = $"{Request.Scheme}://{Request.Host}";
-                var year = DateTime.Now.Year;
-                var url = $"{baseUrl}/api/RaporApi/AylikKazanc?year={year}";
-
-                var response = await client.GetAsync(url);
-
+                var response = await client.GetAsync($"https://localhost:7001/api/RaporApi/aylik-kazanc?year={yil}");
                 if (!response.IsSuccessStatusCode)
                 {
-                    ViewBag.Error = $"Kazanç bilgisi alınamadı (API). Status: {(int)response.StatusCode}";
+                    ViewBag.Error = $"Kazanç bilgisi alınamadı (API yanıt vermedi). Status: {(int)response.StatusCode}";
+                    ViewBag.SelectedYear = yil;
                     return View(new List<Kazanc>());
                 }
 
                 var json = await response.Content.ReadAsStringAsync();
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-                var dto = JsonSerializer.Deserialize<List<KazancDto>>(json, options) ?? new List<KazancDto>();
+                // API anon obje dönüyor: { ay, kazanc } -> modelin propertyleri Ay ve kazanc ile uyumlu.
+                var model = JsonSerializer.Deserialize<List<Kazanc>>(json, options) ?? new List<Kazanc>();
 
-                // DTO -> View Model
-                var model = dto.Select(x => new Kazanc
-                {
-                    Ay = x.Ay,
-                    kazanc = x.Kazanc
-                }).ToList();
-
+                ViewBag.SelectedYear = yil;
                 return View(model);
             }
-            catch (Exception ex)
+            catch
             {
-                ViewBag.Error = "Kazanç bilgisi alınamadı (API). " + ex.Message;
+                ViewBag.Error = "Kazanç bilgisi alınamadı (API yanıt vermedi).";
+                ViewBag.SelectedYear = yil;
                 return View(new List<Kazanc>());
             }
         }
