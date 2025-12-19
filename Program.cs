@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Fitness_Center_Web_Project.Context;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

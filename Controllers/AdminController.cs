@@ -105,28 +105,55 @@ namespace Fitness_Center_Web_Project.Controllers
             return RedirectToAction(nameof(Randevular));
         }
 
-        // Kazanç Listeleme (REST API üzerinden)
+
+        public class KazancDto
+        {
+            public string Ay { get; set; } = "";
+            public decimal Kazanc { get; set; }
+        }
+
         [HttpGet]
         public async Task<IActionResult> KazancListele()
         {
             var roleCheck = CheckAdminRole();
             if (roleCheck != null) return roleCheck;
 
-            // Not: API portu projene göre değişebilir. Çalışmazsa bunu AppSettings'ten alacak hale getiririz.
-            var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync("https://localhost:7001/api/Kazanc/AylikKazanclar");
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                ViewBag.Error = "Kazanç bilgisi alınamadı (API yanıt vermedi).";
+                var client = _httpClientFactory.CreateClient();
+
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var year = DateTime.Now.Year;
+                var url = $"{baseUrl}/api/RaporApi/AylikKazanc?year={year}";
+
+                var response = await client.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    ViewBag.Error = $"Kazanç bilgisi alınamadı (API). Status: {(int)response.StatusCode}";
+                    return View(new List<Kazanc>());
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+                var dto = JsonSerializer.Deserialize<List<KazancDto>>(json, options) ?? new List<KazancDto>();
+
+                // DTO -> View Model
+                var model = dto.Select(x => new Kazanc
+                {
+                    Ay = x.Ay,
+                    kazanc = x.Kazanc
+                }).ToList();
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Kazanç bilgisi alınamadı (API). " + ex.Message;
                 return View(new List<Kazanc>());
             }
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var kazancListesi = JsonSerializer.Deserialize<List<Kazanc>>(responseContent,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<Kazanc>();
-
-            return View(kazancListesi);
         }
+
     }
 }
