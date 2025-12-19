@@ -98,74 +98,76 @@ namespace Fitness_Center_Web_Project.Controllers
             return View();
         }
 
-        // Uygunluk kontrolü (POST)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UygunlukKontrol(int islemId, int personelId, DateTime randevuTarihi, TimeSpan randevuSaati)
+        // GET: /Randevu/UygunlukKontrol?islemId=1&personelId=2&tarih=2025-12-20&saat=12:00
+        [HttpGet]
+        public async Task<IActionResult> UygunlukKontrol(int islemId, int personelId, DateTime tarih, TimeSpan saat)
         {
-            var roleCheck = CheckUserRole();
-            if (roleCheck != null) return roleCheck;
+            if (islemId <= 0 || personelId <= 0)
+                return BadRequest("islemId/personelId eksik.");
 
-            var islem = await _context.Islemler.FirstOrDefaultAsync(i => i.Id == islemId);
+            // tarih/saat birleşimi
+            var baslangic = tarih.Date.Add(saat);
+
+            // İşlem ve personel var mı?
+            var islem = await _context.Islemler.AsNoTracking().FirstOrDefaultAsync(i => i.Id == islemId);
             var personel = await _context.Personeller
+                .AsNoTracking()
                 .Include(p => p.Mesailer)
                     .ThenInclude(m => m.CalistigiGunler)
                 .FirstOrDefaultAsync(p => p.Id == personelId);
 
             if (islem == null || personel == null)
+                return BadRequest("İşlem veya personel bulunamadı.");
+
+            // 1) Personelin çalışma günü kontrolü
+            var gun = baslangic.DayOfWeek;
+            var mesai = personel.Mesailer?.FirstOrDefault(); // sende tek mesai var gibi
+            if (mesai == null) return BadRequest("Personelin mesai bilgisi yok.");
+
+            bool gunUygun = mesai.CalistigiGunler != null && mesai.CalistigiGunler.Any(g => g.Gun == gun);
+            if (!gunUygun)
             {
-                TempData["ErrorMessage"] = "Geçersiz hizmet veya antrenör seçimi.";
-                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
+                TempData["ErrorMessage"] = "Seçilen gün personelin çalışma günü değil.";
+                return RedirectToAction("TarihSaatSec", new { islemId, personelId });
             }
 
-            // 1) Geçmiş tarih/saat engeli (kritik)
-            var baslangic = randevuTarihi.Date.Add(randevuSaati);
-            if (baslangic < DateTime.Now)
+            // 2) Mesai saat aralığı kontrolü
+            var bitis = baslangic.Add(islem.Sure);
+            var mesaiBas = baslangic.Date.Add(mesai.BaslangicZamani);
+            var mesaiBit = baslangic.Date.Add(mesai.BitisZamani);
+
+            if (baslangic < mesaiBas || bitis > mesaiBit)
             {
-                TempData["ErrorMessage"] = "Geçmiş bir tarih/saat için randevu oluşturamazsınız.";
-                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
+                TempData["ErrorMessage"] = "Seçilen saat personelin mesai saatleri dışında.";
+                return RedirectToAction("TarihSaatSec", new { islemId, personelId });
             }
 
-            // 2) Mesai kontrolü
-            var bitisSaat = randevuSaati + islem.Sure;
-            var gun = randevuTarihi.DayOfWeek;
-
-            var mesaiUygunMu = personel.Mesailer.Any(m =>
-                m.CalistigiGunler.Any(g => g.Gun == gun) &&
-                m.BaslangicZamani <= randevuSaati &&
-                m.BitisZamani >= bitisSaat);
-
-            if (!mesaiUygunMu)
-            {
-                TempData["ErrorMessage"] = "Antrenörün seçilen tarihte/saatte mesaisi bulunmamaktadır.";
-                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
-            }
-
-            // 3) Çakışma kontrolü (overlap)
+            // Aynı personelin aynı gün randevularını çek (Beklemede/Onaylandı)
             var gunRandevulari = await _context.Randevular
-                .Where(r => r.PersonelId == personelId
-                            && r.RandevuTarihi.Date == randevuTarihi.Date
-                            && r.Durum != "İptal")
+                .AsNoTracking()
+                .Where(r =>
+                    r.PersonelId == personelId &&
+                    r.RandevuTarihi.Date == tarih.Date &&
+                    (r.Durum == "Beklemede" || r.Durum == "Onaylandı"))
                 .ToListAsync();
 
-            var yeniBaslangic = randevuSaati;
-            var yeniBitis = randevuSaati + islem.Sure;
-
+            // Çakışma kontrolü (C# tarafında)
             bool cakismaVar = gunRandevulari.Any(r =>
             {
-                var mevcutBaslangic = r.RandevuSaati;
-                var mevcutBitis = r.RandevuSaati + r.Sure;
-                return yeniBaslangic < mevcutBitis && mevcutBaslangic < yeniBitis;
+                var rBas = r.RandevuTarihi.Date.Add(r.RandevuSaati);
+                var rBit = rBas.Add(r.Sure);
+                return rBas < bitis && rBit > baslangic;
             });
 
             if (cakismaVar)
             {
-                TempData["ErrorMessage"] = "Seçilen saat aralığında antrenörün başka bir randevusu bulunmaktadır.";
-                return RedirectToAction(nameof(TarihSaatSec), new { islemId, personelId });
+                TempData["ErrorMessage"] = "Bu saat dolu. Lütfen başka bir saat seçin.";
+                return RedirectToAction("TarihSaatSec", new { islemId, personelId });
             }
 
-            TempData["SuccessMessage"] = "Seçim uygun. Randevu onay sayfasına yönlendiriliyorsunuz.";
-            return RedirectToAction(nameof(RandevuOnayla), new { islemId, personelId, randevuTarihi, randevuSaati });
+
+            // uygunsa onay sayfasına götür (senin projende hangi action ise onu çağır)
+            return RedirectToAction("RandevuOnayla", new { islemId, personelId, tarih = baslangic.ToString("yyyy-MM-dd"), saat = baslangic.ToString("HH:mm") });
         }
 
         // Onay ekranı (GET)
