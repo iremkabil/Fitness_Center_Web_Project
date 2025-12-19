@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Ana Sayfa";
 }
 
 <div class="hero">
@@ -7,126 +7,121 @@
         <div class="row justify-content-between">
             <div class="col-lg-5">
                 <div class="intro-excerpt">
-					<h1>Güzelliğin <span clsas="d-block">Yeni Adresi </span></h1>
-					<p class="mb-4">Saç tasarımında estetik ve kaliteyi bir araya getiriyoruz. Modern tekniklerle saçlarınızı yeniden şekillendiriyor ve size en iyi hizmeti sunmak için çalışıyoruz.</p>
-                    <p><a href="" class="btn btn-secondary me-2">Kaydol</a><a href="#" class="btn btn-white-outline">Giriş yap</a></p>
+                    <h1>Gücün ve Sağlığın <span class="d-block">Yeni Adresi</span></h1>
+                    <p class="mb-4">Modern ekipmanlar, uzman antrenörler ve size özel beslenme programlarıyla hayalinizdeki vücuda kavuşun. Sınırlarınızı zorlamaya hazır mısınız?</p>
+                    <p>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-secondary me-2">Hemen Kaydol</a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-white-outline">Giriş Yap</a>
+                    </p>
                 </div>
             </div>
             <div class="col-lg-7">
                 <div class="hero-img-wrap">
-                    <img src="images/girl.png" class="img-fluid">
+                    <img src="~/images/gym-hero.png" class="img-fluid" alt="Fitness Center">
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- Start Product Section -->
+
 <div class="product-section">
-	<div class="container">
-		<div class="row">
+    <div class="container">
+        <div class="row">
 
-			<!-- Start Column 1 -->
-			<div class="col-md-12 col-lg-3 mb-5 mb-lg-0">
-				<h2 class="mb-4 section-title">Sakaryanın En İyi Kuaförü</h2>
-				<p class="mb-4">Saçlarınızı şekillendirirken, size yakışan bir model deneyimi sunuyoruz</p>
-				<p><a class="btn" asp-controller="Account" asp-action="Login">Giriş yap</a></p>
+            <div class="col-md-12 col-lg-3 mb-5 mb-lg-0">
+                <h2 class="mb-4 section-title">Sakarya'nın En Kapsamlı Spor Salonu</h2>
+                <p class="mb-4">Hedeflerinize ulaşmanız için profesyonel ekipmanlar ve motivasyon dolu bir ortam sunuyoruz.</p>
+                <p><a asp-controller="Account" asp-action="Login" class="btn">Randevu Al</a></p>
+            </div>
 
-			</div>
-			<!-- End Column 1 -->
-			<!-- Start Column 2 -->
-			<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-				<a class="product-item" href="cart.html">
-					<img src="images/kisa-sac.png" class="img-fluid product-thumbnail">
-					<h3 class="product-title">Saç kesimi</h3>
-					<strong class="product-price">400.00 tl</strong>
+            <div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
+                <a class="product-item" href="#">
+                    <img src="~/images/fitness-icon.png" class="img-fluid product-thumbnail">
+                    <h3 class="product-title">Fitness Üyeliği</h3>
+                    <strong class="product-price">1000.00 TL / Ay</strong>
+                </a>
+            </div>
 
-				</a>
-			</div>
-			<!-- End Column 2 -->
-			<!-- Start Column 3 -->
-			<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-				<a class="product-item" href="cart.html">
-					<img src="images/dyed.png" class="img-fluid product-thumbnail">
-					<h3 class="product-title">Boyama işlemi</h3>
-					<strong class="product-price">600.00 tl</strong>
-				</a>
-			</div>
-			<!-- End Column 3 -->
-			<!-- Start Column 4 -->
-			<div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-				<a class="product-item" href="cart.html">
-					<img src="images/bun.png" class="img-fluid product-thumbnail">
-					<h3 class="product-title">Şekillendirme</h3>
-					<strong class="product-price">300.00 tl</strong>
+            <div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
+                <a class="product-item" href="#">
+                    <img src="~/images/yoga-icon.png" class="img-fluid product-thumbnail">
+                    <h3 class="product-title">Pilates & Yoga</h3>
+                    <strong class="product-price">800.00 TL / Ay</strong>
+                </a>
+            </div>
 
-					<span class="icon-cross">
-						<img src="images/cross.svg" class="img-fluid">
-					</span>
-				</a>
-			</div>
-			<!-- End Column 4 -->
+            <div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
+                <a class="product-item" href="#">
+                    <img src="~/images/pt-icon.png" class="img-fluid product-thumbnail">
+                    <h3 class="product-title">Özel Ders (PT)</h3>
+                    <strong class="product-price">500.00 TL / Ders</strong>
+                    <span class="icon-cross">
+                        <img src="~/images/cross.svg" class="img-fluid">
+                    </span>
+                </a>
+            </div>
 
-		</div>
-	</div>
+        </div>
+    </div>
 </div>
-<!-- End Product Section -->
+
 <div class="why-choose-section">
-	<div class="container">
-		<div class="row justify-content-between">
-			<div class="col-lg-6">
-				<h2 class="section-title">Neden Bizi Seçmelisiniz?</h2>
-				<p>Saçlarınızı güvenle emanet edebileceğiniz, güzellik ve bakımda kaliteyi ön planda tutan profesyonel bir ekip ile çalışıyoruz. Sizi her zaman en iyi şekilde ağırlamak ve tarzınıza uygun çözümler sunmak için buradayız.</p>
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-lg-6">
+                <h2 class="section-title">Neden Bizi Seçmelisiniz?</h2>
+                <p>Sağlığınızı şansa bırakmayın. Hijyenik çalışma alanları, son teknoloji ekipmanlar ve akademik kadromuzla Sakarya'da spora yeni bir soluk getiriyoruz.</p>
 
-				<div class="row my-5">
-					<div class="col-6 col-md-6">
-						<div class="feature">
-							<div class="icon">
-								<img src="images/team.svg" alt="Image" class="imf-fluid" style="width: 50px; height: 50px;">
-							</div>
-							<h3>Uzman Ekip</h3>
-							<p>Alanında deneyimli ve eğitimli ekibimizle, size özel saç tasarımları ve bakımlar sunuyoruz.</p>
-						</div>
-					</div>
+                <div class="row my-5">
+                    <div class="col-6 col-md-6">
+                        <div class="feature">
+                            <div class="icon">
+                                <img src="~/images/trainer-icon.svg" alt="Image" class="img-fluid" style="width: 50px; height: 50px;">
+                            </div>
+                            <h3>Uzman Kadro</h3>
+                            <p>Sertifikalı ve deneyimli antrenörlerimizle hedeflerinize en kısa sürede ulaşın.</p>
+                        </div>
+                    </div>
 
-					<div class="col-6 col-md-6">
-						<div class="feature">
-							<div class="icon">
-								<img src="images/tarak.svg" alt="Image" class="imf-fluid" style="width: 50px; height: 50px;">
-							</div>
-							<h3>Kişiye Özel Hizmet</h3>
-							<p>Tarzınıza ve ihtiyaçlarınıza uygun kişisel bakım çözümleri ile kendinizi özel hissedin.</p>
-						</div>
-					</div>
+                    <div class="col-6 col-md-6">
+                        <div class="feature">
+                            <div class="icon">
+                                <img src="~/images/plan-icon.svg" alt="Image" class="img-fluid" style="width: 50px; height: 50px;">
+                            </div>
+                            <h3>Kişiye Özel Program</h3>
+                            <p>Vücut analizinize ve hedeflerinize göre hazırlanan özel antrenman ve beslenme programları.</p>
+                        </div>
+                    </div>
 
-					<div class="col-6 col-md-6">
-						<div class="feature">
-							<div class="icon">
-								<img src="images/shampoo.svg" alt="Image" class="imf-fluid" style="width: 50px; height: 50px;">
-							</div>
-							<h3>Kaliteli Ürünler</h3>
-							<p>Saçlarınız için yalnızca en kaliteli ve güvenilir ürünleri kullanıyoruz.</p>
-						</div>
-					</div>
+                    <div class="col-6 col-md-6">
+                        <div class="feature">
+                            <div class="icon">
+                                <img src="~/images/equipment-icon.svg" alt="Image" class="img-fluid" style="width: 50px; height: 50px;">
+                            </div>
+                            <h3>Modern Ekipmanlar</h3>
+                            <p>Kas gruplarınızı en verimli şekilde çalıştıracak yeni nesil fitness makineleri.</p>
+                        </div>
+                    </div>
 
-					<div class="col-6 col-md-6">
-						<div class="feature">
-							<div class="icon">
-								<img src="images/happy.svg" alt="Image" class="imf-fluid" style="width: 50px; height: 50px;">
-							</div>
-							<h3>Memnuniyet Garantisi</h3>
-							<p>Her müşterimizin memnuniyeti bizim için önceliklidir. Sizin için en iyisini hedefliyoruz.</p>
-						</div>
-					</div>
+                    <div class="col-6 col-md-6">
+                        <div class="feature">
+                            <div class="icon">
+                                <img src="~/images/clean-icon.svg" alt="Image" class="img-fluid" style="width: 50px; height: 50px;">
+                            </div>
+                            <h3>Hijyenik Ortam</h3>
+                            <p>Düzenli dezenfekte edilen, havadar ve ferah çalışma alanları.</p>
+                        </div>
+                    </div>
 
-				</div>
-			</div>
+                </div>
+            </div>
 
-			<div class="col-lg-5">
-				<div class="img-wrap">
-					<img src="images/fon.jpg" alt="Image" class="img-fluid">
-				</div>
-			</div>
+            <div class="col-lg-5">
+                <div class="img-wrap">
+                    <img src="~/images/gym-interior.jpg" alt="Fitness Salonu" class="img-fluid">
+                </div>
+            </div>
 
-		</div>
-	</div>
+        </div>
+    </div>
 </div>
