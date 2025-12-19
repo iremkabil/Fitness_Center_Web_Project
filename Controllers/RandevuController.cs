@@ -2,6 +2,7 @@
 using Fitness_Center_Web_Project.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace Fitness_Center_Web_Project.Controllers
 {
@@ -167,7 +168,7 @@ namespace Fitness_Center_Web_Project.Controllers
 
 
             // uygunsa onay sayfasına götür (senin projende hangi action ise onu çağır)
-            return RedirectToAction("RandevuOnayla", new { islemId, personelId, tarih = baslangic.ToString("yyyy-MM-dd"), saat = baslangic.ToString("HH:mm") });
+            return RedirectToAction("RandevuOnayla", new { islemId, personelId, randevuTarihi = baslangic.ToString("yyyy-MM-dd"), randevuSaati = baslangic.ToString("HH:mm") });
         }
 
         // Onay ekranı (GET)
