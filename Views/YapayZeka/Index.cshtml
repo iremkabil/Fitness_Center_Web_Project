@@ -1,0 +1,86 @@
+﻿@model Fitness_Center_Web_Project.Models.AiOneriModel
+
+@{
+    ViewData["Title"] = "AI Antrenör";
+}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-6 mx-auto text-center mb-4">
+            <h2 class="fw-bold">🤖 Yapay Zeka Antrenörü</h2>
+            <p class="text-muted">Bilgilerini gir, sana özel programı hemen oluşturalım.</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-5 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Index" method="post">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Yaşınız</label>
+                            <input asp-for="Yas" class="form-control" type="number" min="10" max="90" required />
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold">Boy (cm)</label>
+                                <input asp-for="Boy" class="form-control" type="number" placeholder="175" required />
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label fw-bold">Kilo (kg)</label>
+                                <input asp-for="Kilo" class="form-control" type="number" placeholder="70" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Cinsiyet</label>
+                            <select asp-for="Cinsiyet" class="form-select">
+                                <option value="Erkek">Erkek</option>
+                                <option value="Kadın">Kadın</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Hedefiniz</label>
+                            <select asp-for="Hedef" class="form-select">
+                                <option value="Kilo Vermek">Kilo Vermek (Yağ Yakımı)</option>
+                                <option value="Kas Yapmak">Kas Kütlesini Artırmak</option>
+                                <option value="Formda Kalmak">Sadece Formda Kalmak</option>
+                                <option value="Güçlenmek">Kuvvet Kazanmak</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                             Analiz Et ve Oluştur ✨
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            @if (!string.IsNullOrEmpty(Model.YapayZekaCevabi))
+            {
+                <div class="card shadow border-success h-100">
+                    <div class="card-header bg-success text-white fw-bold">
+                        🎯 Senin İçin Hazırlanan Plan
+                    </div>
+                    <div class="card-body bg-light">
+                        <div style="white-space: pre-wrap; font-family: sans-serif; line-height: 1.6;">@Model.YapayZekaCevabi</div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info d-flex align-items-center" role="alert">
+                    <div>
+                        <strong>Nasıl Çalışır?</strong><br>
+                        Google'ın güçlü yapay zeka servisi (Gemini), girdiğin verilere göre saniyeler içinde sana özel bir tavsiye oluşturur.
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
