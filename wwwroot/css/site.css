@@ -20,3 +20,17 @@ html {
 body {
   margin-bottom: 60px;
 }
+.hero .hero-img-wrap {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.hero .hero-img {
+    width: 100%;
+    max-width: 980px; /* Ýstersen 900-1100 arasý dene */
+    height: 460px; /* Sabit yükseklik veriyoruz */
+    object-fit: cover; /* Görseli bozmadan alaný doldurur */
+    border-radius: 18px;
+    display: block;
+}
