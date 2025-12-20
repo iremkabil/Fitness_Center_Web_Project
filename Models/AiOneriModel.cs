@@ -9,6 +9,9 @@
         public string Cinsiyet { get; set; } = "Belirtilmemiş";
         public string Hedef { get; set; } = "Kilo Vermek";
 
+        // Yeni:
+        public IFormFile? FizikFoto { get; set; }
+
         // Yapay zekadan gelen cevabı buraya yazacağız
         public string? YapayZekaCevabi { get; set; }
     }
