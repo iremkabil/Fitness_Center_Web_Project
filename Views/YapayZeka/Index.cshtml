@@ -52,6 +52,12 @@
                             </select>
                         </div>
 
+                        <div class="form-group mt-3">
+                            <label class="form-label fw-bold">Güncel fizik fotoğrafı (opsiyonel)</label>
+                            <input asp-for="FizikFoto" type="file" accept="image/*" class="form-control" />
+                            <small class="text-muted">JPG/PNG önerilir.</small>
+                        </div>
+
                         <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
                              Analiz Et ve Oluştur ✨
                         </button>
