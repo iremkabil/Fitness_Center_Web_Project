@@ -3,11 +3,21 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Net.Http.Headers;
 
 namespace Fitness_Center_Web_Project.Controllers
 {
     public class YapayZekaController : Controller
     {
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+
+        public YapayZekaController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        {
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+        }
+
         // SENİN ÇALIŞAN ANAHTARIN
         private const string ApiKey = "AIzaSyBbxy5x_pi2mpNqxwcbH3BAu3DZqg8a_RE";
 

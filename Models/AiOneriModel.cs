@@ -1,18 +1,32 @@
-﻿namespace Fitness_Center_Web_Project.Models
-{
-    public class AiOneriModel
+﻿using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
+
+namespace Fitness_Center_Web_Project.Models
     {
-        // Kullanıcıdan alacağımız bilgiler
-        public int Yas { get; set; }
-        public int Boy { get; set; }   // cm
-        public int Kilo { get; set; }  // kg
-        public string Cinsiyet { get; set; } = "Belirtilmemiş";
-        public string Hedef { get; set; } = "Kilo Vermek";
+        public class AiOneriModel
+        {
+            [Range(10, 90)]
+            public int Yas { get; set; }
 
-        // Yeni:
-        public IFormFile? FizikFoto { get; set; }
+            [Range(120, 230)]
+            public int Boy { get; set; }
 
-        // Yapay zekadan gelen cevabı buraya yazacağız
-        public string? YapayZekaCevabi { get; set; }
+            [Range(30, 250)]
+            public int Kilo { get; set; }
+
+            [Required]
+            public string Cinsiyet { get; set; } = "";
+
+            [Required]
+            public string Hedef { get; set; } = "";
+
+            // Kullanıcının yüklediği foto
+            public IFormFile? Foto { get; set; }
+
+            // Gemini’den gelen metin plan
+            public string? YapayZekaCevabi { get; set; }
+
+            // Üretilen dönüşüm görselinin web yolu (/ai/xxx.png)
+            public string? DonusumGorselUrl { get; set; }
+        }
     }
-}
