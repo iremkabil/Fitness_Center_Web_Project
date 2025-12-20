@@ -30,16 +30,17 @@
 
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="@Url.Action("Index", "AdminDashboard", new { area = "Admin" })">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" asp-controller="AdminDashboard" asp-action="Index">
                 <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-dumbbell"></i> </div>
+                    <i class="fas fa-dumbbell"></i> 
+                </div>
                 <div class="sidebar-brand-text mx-3">Fitness Admin</div>
             </a>
 
             <hr class="sidebar-divider my-0">
 
             <li class="nav-item">
-                <a class="nav-link" asp-area="Admin" asp-controller="AdminDashboard" asp-action="Index">
+                <a class="nav-link" asp-controller="AdminDashboard" asp-action="Index">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
@@ -48,44 +49,44 @@
             <hr class="sidebar-divider">
 
             <li class="nav-item">
-                <a class="nav-link" asp-area="Admin" asp-controller="Egitmen" asp-action="Index">
+                <a class="nav-link" asp-controller="Personel" asp-action="Index">
                     <i class="fas fa-fw fa-user-tie"></i>
-                    <span>Antrenörler</span>
+                    <span>Antrenör Yönetimi</span>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" asp-area="Admin" asp-controller="Islem" asp-action="Index">
+                <a class="nav-link" asp-controller="Islem" asp-action="Index">
                     <i class="fas fa-fw fa-layer-group"></i>
                     <span>Üyelik Paketleri</span>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" asp-area="Admin" asp-controller="Uzmanlik" asp-action="Index">
+                <a class="nav-link" asp-controller="PersonelUzmanlik" asp-action="Index">
                     <i class="fas fa-fw fa-certificate"></i>
-                    <span>Branşlar / Uzmanlıklar</span>
+                    <span>Uzmanlık Alanları</span>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" asp-area="Admin" asp-controller="Randevu" asp-action="Index">
+                <a class="nav-link" asp-controller="Randevu" asp-action="Index">
                     <i class="fas fa-fw fa-calendar-check"></i>
                     <span>Üye Randevuları</span>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link btn btn-success text-white mx-2" asp-area="Admin" asp-controller="Rapor" asp-action="Kazanc">
+                <a class="nav-link btn btn-success text-white mx-2 mt-3" asp-controller="Kazanc" asp-action="Index">
                     <i class="fas fa-fw fa-lira-sign"></i>
                     <span>Finansal Rapor</span>
                 </a>
             </li>
 
-            <hr class="sidebar-divider">
+            <hr class="sidebar-divider mt-3">
 
             <li class="nav-item">
-                <a class="nav-link text-danger font-weight-bold" asp-area="" asp-controller="Account" asp-action="Logout">
+                <a class="nav-link text-danger font-weight-bold" asp-controller="Account" asp-action="Logout">
                     <i class="fas fa-fw fa-sign-out-alt"></i>
                     <span>Çıkış Yap</span>
                 </a>
@@ -94,13 +95,12 @@
             <hr class="sidebar-divider d-none d-md-block">
 
         </ul>
+        
         <div id="content-wrapper" class="d-flex flex-column">
             <div id="content">
 
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <h5 class="ml-3 font-weight-bold text-primary">Fitness Center Yönetim Paneli</h5>
-                    <ul class="navbar-nav ml-auto">
-                        </ul>
                 </nav>
 
                 <div class="container-fluid">
@@ -130,5 +130,4 @@
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>
-
 </html>
