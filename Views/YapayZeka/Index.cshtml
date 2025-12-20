@@ -1,7 +1,7 @@
 ﻿@model Fitness_Center_Web_Project.Models.AiOneriModel
 
 @{
-    ViewData["Title"] = "AI Antrenör";
+    ViewData["Title"] = "Yapay Zeka Antrenörü";
 }
 
 <div class="container py-5">
@@ -16,11 +16,12 @@
         <div class="col-md-5 mb-4">
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <form asp-action="Index" method="post">
-                        
+                    <form asp-action="Index" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Yaşınız</label>
-                            <input asp-for="Yas" class="form-control" type="number" min="10" max="90" required />
+                            <input asp-for="Yas" class="form-control" type="number" />
                         </div>
 
                         <div class="row">
@@ -54,7 +55,7 @@
 
                         <div class="form-group mt-3">
                             <label class="form-label fw-bold">Güncel fizik fotoğrafı (opsiyonel)</label>
-                            <input asp-for="FizikFoto" type="file" accept="image/*" class="form-control" />
+                            <input asp-for="Foto" type="file" accept="image/*" class="form-control" />
                             <small class="text-muted">JPG/PNG önerilir.</small>
                         </div>
 
@@ -86,6 +87,12 @@
                         Google'ın güçlü yapay zeka servisi (Gemini), girdiğin verilere göre saniyeler içinde sana özel bir tavsiye oluşturur.
                     </div>
                 </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model?.DonusumGorselUrl))
+            {
+                <h3>Temsili Dönüşüm Görseli</h3>
+                <img src="@Model.DonusumGorselUrl" style="max-width:500px;border-radius:12px;" />
             }
         </div>
     </div>

@@ -1,25 +1,27 @@
 ﻿using Fitness_Center_Web_Project.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Net.Http.Headers;
 
 namespace Fitness_Center_Web_Project.Controllers
 {
     public class YapayZekaController : Controller
     {
+        private readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _env;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IConfiguration _configuration;
 
-        public YapayZekaController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        private const string ModelName = "gemini-2.5-flash-image";
+        private const string Endpoint =
+            "https://generativelanguage.googleapis.com/v1beta/models/" + ModelName + ":generateContent";
+
+        public YapayZekaController(IConfiguration config, IWebHostEnvironment env, IHttpClientFactory httpClientFactory)
         {
+            _config = config;
+            _env = env;
             _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
         }
-
-        // SENİN ÇALIŞAN ANAHTARIN
-        private const string ApiKey = "AIzaSyBbxy5x_pi2mpNqxwcbH3BAu3DZqg8a_RE";
 
         [HttpGet]
         public IActionResult Index()
@@ -28,89 +30,174 @@ namespace Fitness_Center_Web_Project.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(AiOneriModel model)
         {
-            string prompt = $"Ben {model.Yas} yaşında, {model.Boy} cm, {model.Kilo} kg, {model.Cinsiyet} biriyim. Hedefim: {model.Hedef}. Bana kısa bir beslenme tüyosu ve 3 tane evde yapılacak egzersiz öner. Türkçe cevap ver.";
+            if (!ModelState.IsValid)
+                return View(model);
 
-            using (var httpClient = new HttpClient())
+            // Foto zorunlu olsun istiyorsan:
+            if (model.Foto == null || model.Foto.Length == 0)
             {
-                try
-                {
-                    // 1. ADIM: Modelleri listele
-                    var listModelsUrl = $"https://generativelanguage.googleapis.com/v1beta/models?key={ApiKey}";
-                    var listResponse = await httpClient.GetAsync(listModelsUrl);
-
-                    string modelName = "";
-
-                    if (listResponse.IsSuccessStatusCode)
-                    {
-                        var listString = await listResponse.Content.ReadAsStringAsync();
-                        var modelList = JsonSerializer.Deserialize<ModelListRoot>(listString);
-
-                        // ÖNCE KARARLI MODELLERİ ARA (Sırasıyla bunları kontrol et)
-                        var kararliModeller = new[] { "models/gemini-1.5-flash", "models/gemini-1.5-flash-001", "models/gemini-pro" };
-
-                        var bulunanModel = modelList?.Models?
-                            .FirstOrDefault(m => kararliModeller.Contains(m.Name));
-
-                        if (bulunanModel != null)
-                        {
-                            modelName = bulunanModel.Name; // Kararlı model bulundu!
-                        }
-                        else
-                        {
-                            // Kararlıları bulamazsa herhangi bir Gemini modelini al (Son çare)
-                            modelName = modelList?.Models?
-                                .FirstOrDefault(m => m.Name.Contains("gemini") && m.SupportedGenerationMethods.Contains("generateContent"))?.Name
-                                ?? "models/gemini-pro";
-                        }
-                    }
-                    else
-                    {
-                        // Liste alamazsak manuel olarak bunu dene
-                        modelName = "models/gemini-1.5-flash";
-                    }
-
-                    // 2. ADIM: Seçilen sağlam model ile isteği gönder
-                    var generateUrl = $"https://generativelanguage.googleapis.com/v1beta/{modelName}:generateContent?key={ApiKey}";
-
-                    var requestBody = new
-                    {
-                        contents = new[] { new { parts = new[] { new { text = prompt } } } }
-                    };
-
-                    var jsonContent = JsonSerializer.Serialize(requestBody);
-                    var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-                    var response = await httpClient.PostAsync(generateUrl, httpContent);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        var geminiResponse = JsonSerializer.Deserialize<GeminiResponseRoot>(responseString);
-                        model.YapayZekaCevabi = geminiResponse?.Candidates?[0]?.Content?.Parts?[0]?.Text;
-                    }
-                    else
-                    {
-                        var errorContent = await response.Content.ReadAsStringAsync();
-                        model.YapayZekaCevabi = $"HATA! \nSeçilen Model: {modelName} \nDurum: {response.StatusCode} \nDetay: {errorContent}";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    model.YapayZekaCevabi = "Bağlantı hatası: " + ex.Message;
-                }
+                ModelState.AddModelError("", "Lütfen bir fotoğraf yükleyin.");
+                return View(model);
             }
 
-            return View(model);
+            // Basit güvenlik kontrolleri
+            var allowed = new[] { "image/jpeg", "image/png", "image/webp" };
+            if (!allowed.Contains(model.Foto.ContentType))
+            {
+                ModelState.AddModelError("", "Sadece JPG/PNG/WEBP yükleyebilirsiniz.");
+                return View(model);
+            }
+
+            if (model.Foto.Length > 5 * 1024 * 1024)
+            {
+                ModelState.AddModelError("", "Maksimum 5MB fotoğraf yükleyebilirsiniz.");
+                return View(model);
+            }
+
+            var apiKey = _config["Gemini:ApiKey"];
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                model.YapayZekaCevabi = "Gemini API key bulunamadı. User-Secrets/appsettings kontrol edin.";
+                return View(model);
+            }
+
+            byte[] inputImageBytes;
+            using (var ms = new MemoryStream())
+            {
+                await model.Foto.CopyToAsync(ms);
+                inputImageBytes = ms.ToArray();
+            }
+
+            var base64Image = Convert.ToBase64String(inputImageBytes);
+
+            // Prompt: hem plan üretmesini hem de “dönüşüm görseli” üretmesini istiyoruz.
+            // (Bu görsel temsili olacak; gerçek sonucu garanti etmez.)
+            var prompt = $@"
+                Kullanıcı bilgileri:
+                - Yaş: {model.Yas}
+                - Boy: {model.Boy} cm
+                - Kilo: {model.Kilo} kg
+                - Cinsiyet: {model.Cinsiyet}
+                - Hedef: {model.Hedef}
+
+                İSTEK 1 (METİN): 8 haftalık kısa bir plan yaz:
+                - Haftalık antrenman programı (gün gün)
+                - Basit beslenme önerileri (madde madde)
+                - Güvenli uyarılar (sakatlık/sağlık için doktora danış vb.)
+                Cevabı Türkçe ver ve çok uzun yazma.
+
+                İSTEK 2 (GÖRSEL): Yüklenen fotoğrafı referans alarak, kişiyi İNSAN GÖRÜNÜMÜ KORUNACAK ŞEKİLDE (aynı kişi hissi),
+                tamamen giyinik, gerçekçi bir tarzda, 8 hafta sonunda hedefe uygun “daha fit” temsili bir görsel üret.
+                Arka planı mümkünse benzer tut, abartı kas/çarpıtma yapma.
+                ";
+
+            // Gemini REST: text + inlineData(image) birlikte gönderilir. :contentReference[oaicite:2]{index=2}
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new object[]
+                        {
+                            new { text = prompt },
+                            new
+                            {
+                                inlineData = new
+                                {
+                                    mimeType = model.Foto.ContentType,
+                                    data = base64Image
+                                }
+                            }
+                        }
+                    }
+                }
+                // İstersen burada generationConfig ekleyebilirsin.
+                // Örn: safetySettings vs. (dokümana göre)
+            };
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var json = JsonSerializer.Serialize(requestBody);
+                var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var resp = await client.PostAsync(Endpoint, httpContent);
+                var respText = await resp.Content.ReadAsStringAsync();
+
+                if (!resp.IsSuccessStatusCode)
+                {
+                    model.YapayZekaCevabi = $"HATA! Durum: {(int)resp.StatusCode} {resp.StatusCode}\nDetay: {respText}";
+                    return View(model);
+                }
+
+                // Response parse
+                using var doc = JsonDocument.Parse(respText);
+
+                // candidates[0].content.parts[*].text / inlineData.data
+                var parts = doc.RootElement
+                    .GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts");
+
+                string? planText = null;
+                byte[]? outImageBytes = null;
+                string? outMime = null;
+
+                foreach (var part in parts.EnumerateArray())
+                {
+                    if (part.TryGetProperty("text", out var txt))
+                    {
+                        var t = txt.GetString();
+                        if (!string.IsNullOrWhiteSpace(t))
+                            planText = (planText == null) ? t : (planText + "\n" + t);
+                    }
+
+                    // inlineData: { mimeType, data(base64) }
+                    if (part.TryGetProperty("inlineData", out var inline))
+                    {
+                        outMime = inline.TryGetProperty("mimeType", out var mt) ? mt.GetString() : "image/png";
+                        var data = inline.GetProperty("data").GetString();
+                        if (!string.IsNullOrWhiteSpace(data))
+                            outImageBytes = Convert.FromBase64String(data);
+                    }
+                }
+
+                model.YapayZekaCevabi = planText ?? "Plan üretilemedi.";
+
+                if (outImageBytes != null)
+                {
+                    var webFolder = Path.Combine(_env.WebRootPath, "ai");
+                    if (!Directory.Exists(webFolder))
+                        Directory.CreateDirectory(webFolder);
+
+                    var fileName = $"{Guid.NewGuid():N}.png";
+                    var filePath = Path.Combine(webFolder, fileName);
+
+                    await System.IO.File.WriteAllBytesAsync(filePath, outImageBytes);
+
+                    model.DonusumGorselUrl = "/ai/" + fileName;
+                }
+                else
+                {
+                    // Bazı yanıtlarda sadece text dönebilir; o durumda bunu göster.
+                    model.DonusumGorselUrl = null;
+                }
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                model.YapayZekaCevabi = "Bağlantı/işlem hatası: " + ex.Message;
+                return View(model);
+            }
         }
     }
-
-    // --- JSON Sınıfları ---
-    public class ModelListRoot { [JsonPropertyName("models")] public List<ModelInfo>? Models { get; set; } }
-    public class ModelInfo { [JsonPropertyName("name")] public string Name { get; set; } = ""; [JsonPropertyName("supportedGenerationMethods")] public List<string> SupportedGenerationMethods { get; set; } = new(); }
-    public class GeminiResponseRoot { [JsonPropertyName("candidates")] public List<Candidate>? Candidates { get; set; } }
-    public class Candidate { [JsonPropertyName("content")] public Content? Content { get; set; } }
-    public class Content { [JsonPropertyName("parts")] public List<Part>? Parts { get; set; } }
-    public class Part { [JsonPropertyName("text")] public string? Text { get; set; } }
 }
